@@ -1,7 +1,7 @@
 // https://api.stackexchange.com/docs/wrapper
 import { User } from "./user";
 
-export interface ApiResponse<Item> {
+export interface ApiResponse<Item = any> {
   backoff?: number;
   error_id?: number;
   error_message?: string;
