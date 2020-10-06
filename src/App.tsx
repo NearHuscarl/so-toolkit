@@ -2,8 +2,8 @@ import React from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import "./App.css";
-import { Profile } from "./widgets";
-import store, { persistor } from "./store/store";
+import { Profile } from "./app/widgets";
+import store, { persistor } from "./app/store/store";
 
 function App() {
   return (

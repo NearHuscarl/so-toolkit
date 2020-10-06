@@ -1,8 +1,8 @@
 import React from "react";
 import { Avatar, Button } from "@material-ui/core";
 import { Chart } from "chart.js";
-import { User } from "../types";
-import { useDispatch, userActions, useSelector } from "../store";
+import { User } from "app/types";
+import { useDispatch, userActions, useSelector } from "app/store";
 
 const data = {
   labels: [
@@ -39,12 +39,13 @@ const data = {
 
 function Profile(props) {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.user.user);
   const chartRef = React.useRef<HTMLCanvasElement | null>(null);
   const getUser = () => {
     dispatch(userActions.getUserRequest(9449426));
   };
   React.useEffect(() => {
+    console.log("profile mount");
     getUser();
   }, []);
   React.useEffect(() => {
@@ -77,7 +78,7 @@ function Profile(props) {
 
   return (
     <div>
-      <pre>{JSON.stringify(user, null, 4)}</pre>
+      <pre style={{ textAlign: "left" }}>{JSON.stringify(user, null, 4)}</pre>
       <Avatar />
       <canvas ref={chartRef} />
       <Button onClick={getUser}>Click</Button>

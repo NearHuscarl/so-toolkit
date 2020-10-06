@@ -1,18 +1,21 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import storage from "redux-persist/lib/storage";
-import { PersistConfig, persistReducer } from "./persist";
+import { PersistConfig, persistReducer } from "app/store/persist";
 import { call, put, takeLatest } from "typed-redux-saga";
-import { User } from "../types";
-import { UserService } from "../helpers";
+import { User } from "app/types";
+import { UserService } from "app/helpers";
+import { Entry } from "lru-cache";
 
-export interface AuthState {
+export interface UserState {
   user?: User;
   userId?: number;
+  cache?: Entry<number, User>[];
 }
 
-const initialState: AuthState = {
+const initialState: UserState = {
   user: undefined,
   userId: undefined,
+  cache: undefined,
 };
 
 const slice = createSlice({
@@ -28,10 +31,13 @@ const slice = createSlice({
     getUserFailure(state) {
       state.userId = undefined;
     },
+    setUserCache(state, action: PayloadAction<Entry<number, User>[]>) {
+      state.cache = action.payload;
+    },
   },
 });
 
-const persistConfig: PersistConfig<AuthState> = {
+const persistConfig: PersistConfig<UserState> = {
   storage,
   key: "user",
 };
@@ -45,6 +51,7 @@ function* getUser(action: ReturnType<typeof actions.getUserRequest>) {
     const response = yield* call(UserService.getUser, userId);
     yield* put(actions.getUserSuccess(response));
   } catch (e) {
+    console.log(e);
     yield* put(actions.getUserFailure());
   }
 }

@@ -9,8 +9,8 @@ import {
   PERSIST,
   PURGE,
 } from "redux-persist";
-import { rootSaga, reducer } from "./rootDuck";
 import { Middleware } from "redux";
+import { rootSaga, reducer } from "./rootDuck";
 
 function createMiddlewares() {
   let middlewares: Middleware[] = [];
