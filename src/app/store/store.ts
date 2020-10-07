@@ -11,18 +11,15 @@ import {
 } from "redux-persist";
 import { Middleware } from "redux";
 import { rootSaga, reducer } from "./rootDuck";
+import { __DEV__ } from "app/constants";
+import createLoggerMiddleware from "./createLoggerMiddleware";
 
 function createMiddlewares() {
   let middlewares: Middleware[] = [];
 
-  if (process.env.NODE_ENV === `development`) {
-    const { createLogger } = require(`redux-logger`);
-    const logger = createLogger({
-      collapsed: true,
-      timestamp: false,
-    });
-
-    middlewares.push(logger);
+  if (__DEV__) {
+    const logger = createLoggerMiddleware();
+    if (logger) middlewares.push(logger);
   }
 
   const sagaMiddleware = createSagaMiddleware();
