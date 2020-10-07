@@ -45,7 +45,6 @@ function Profile(props) {
     dispatch(userActions.getUserRequest(9449426));
   };
   React.useEffect(() => {
-    console.log("profile mount");
     getUser();
   }, []);
   React.useEffect(() => {

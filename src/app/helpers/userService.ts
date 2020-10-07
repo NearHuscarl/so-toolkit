@@ -43,7 +43,7 @@ function memoizeApi<T extends AnyFunction>(cb: T): T {
 
   memoizedCb.cache = new ApiCache<number, User>({
     cache,
-    onGet: (k, v) => debug("cache hit"),
+    onGet: () => debug("cache hit"),
     onSet: (k, v, cache) => {
       store.dispatch(userActions.setUserCache(cache.dump()));
     },
@@ -59,9 +59,9 @@ export default class UserService {
     return UserService.API.get<UserResponse>("users/" + userId, {
       params: {
         site: "stackoverflow",
+        key: process.env.REACT_APP_STACK_APP_KEY,
       },
     }).then((response) => {
-      console.log(response.data);
       return response.data.items[0];
     });
   };
