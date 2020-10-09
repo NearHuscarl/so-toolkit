@@ -9,13 +9,15 @@ import { Entry } from "lru-cache";
 export interface UserState {
   user?: User;
   userId?: number;
-  cache?: Entry<number, User>[];
+  cache: Entry<number, User>[];
+  userSearchCache: Entry<string, number[]>[];
 }
 
 const initialState: UserState = {
   user: undefined,
   userId: undefined,
-  cache: undefined,
+  cache: [],
+  userSearchCache: [],
 };
 
 const slice = createSlice({
@@ -34,6 +36,12 @@ const slice = createSlice({
     setUserCache(state, action: PayloadAction<Entry<number, User>[]>) {
       state.cache = action.payload;
     },
+    setUserSearchCache(
+      state,
+      action: PayloadAction<Entry<string, number[]>[]>
+    ) {
+      state.userSearchCache = action.payload;
+    },
   },
 });
 
@@ -51,7 +59,7 @@ function* getUser(action: ReturnType<typeof actions.getUserRequest>) {
     const response = yield* call(UserService.getUser, userId);
     yield* put(actions.getUserSuccess(response));
   } catch (e) {
-    console.log(e);
+    console.log(e.response.data); // TODO: add error snackbar
     yield* put(actions.getUserFailure());
   }
 }

@@ -2,15 +2,20 @@ import React from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import "./App.css";
-import { Profile } from "./app/widgets";
+import { MyAppBar } from "./app/widgets";
 import store, { persistor } from "./app/store/store";
+import { ThemeProvider } from "app/providers";
+import ReputationPage from "app/pages/ReputationPage";
 
 function App() {
   return (
     <div className="App">
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <Profile />
+          <ThemeProvider>
+            <MyAppBar />
+            <ReputationPage />
+          </ThemeProvider>
         </PersistGate>
       </Provider>
     </div>
