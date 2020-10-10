@@ -1,8 +1,8 @@
-import React from "react";
-import { Avatar, Button } from "@material-ui/core";
-import { Chart } from "chart.js";
-import { User } from "app/types";
-import { useDispatch, userActions, useSelector } from "app/store";
+import React from "react"
+import { Avatar, Button, TextField } from "@material-ui/core"
+import { Chart } from "chart.js"
+import { User } from "app/types"
+import { useDispatch, userActions, useSelector } from "app/store"
 
 const data = {
   labels: [
@@ -35,54 +35,62 @@ const data = {
       data: [15, 20, 25, 30, 25, 20, 15, 20, 25, 30, 25, 20, 15, 10, 15, 20],
     },
   ],
-};
+}
+
+function randomBetween(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
 
 function Profile(props) {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
-  const chartRef = React.useRef<HTMLCanvasElement | null>(null);
+  const dispatch = useDispatch()
+  const [id, setId] = React.useState(0)
+  const user = useSelector((state) => state.user.user)
+  const chartRef = React.useRef<HTMLCanvasElement | null>(null)
   const getUser = () => {
-    dispatch(userActions.getUserRequest(9449426));
-  };
+    dispatch(userActions.getUserRequest(id))
+    // dispatch(userActions.getUserRequest(randomBetween(0, 9787887)));
+  }
   React.useEffect(() => {
-    getUser();
-  }, []);
-  React.useEffect(() => {
-    const myLineChart = new Chart(chartRef.current, {
-      type: "line",
-      data: data,
-      options: {
-        title: { display: false },
-        tooltips: {
-          intersect: false,
-          mode: "nearest",
-          xPadding: 10,
-          yPadding: 10,
-          caretPadding: 10,
-        },
-        legend: { display: false },
-        responsive: false, // TODO: fix responsive
-        maintainAspectRatio: false,
-        barRadius: 4,
-        scales: {
-          xAxes: [{ display: false, gridLines: false, stacked: true }],
-          yAxes: [{ display: false, stacked: true, gridLines: false }],
-        },
-        layout: { padding: { left: 0, right: 0, top: 0, bottom: 0 } },
-      },
-    });
-
-    return () => myLineChart.destroy();
-  }, []);
+    // getUser();
+  }, [])
+  // React.useEffect(() => {
+  //   const myLineChart = new Chart(chartRef.current, {
+  //     type: "line",
+  //     data: data,
+  //     options: {
+  //       title: { display: false },
+  //       tooltips: {
+  //         intersect: false,
+  //         mode: "nearest",
+  //         xPadding: 10,
+  //         yPadding: 10,
+  //         caretPadding: 10,
+  //       },
+  //       legend: { display: false },
+  //       responsive: false, // TODO: fix responsive
+  //       maintainAspectRatio: false,
+  //       barRadius: 4,
+  //       scales: {
+  //         xAxes: [{ display: false, gridLines: false, stacked: true }],
+  //         yAxes: [{ display: false, stacked: true, gridLines: false }],
+  //       },
+  //       layout: { padding: { left: 0, right: 0, top: 0, bottom: 0 } },
+  //     },
+  //   });
+  //
+  //   return () => myLineChart.destroy();
+  // }, []);
 
   return (
     <div>
-      <pre style={{ textAlign: "left" }}>{JSON.stringify(user, null, 4)}</pre>
-      <Avatar />
-      <canvas ref={chartRef} />
+      {/*<pre style={{ textAlign: "left" }}>{JSON.stringify(user, null, 4)}</pre>*/}
+      {/*<canvas ref={chartRef} />*/}
       <Button onClick={getUser}>Click</Button>
+      <TextField value={id} onChange={(e) => setId(parseFloat(e.target.value))}>
+        Click
+      </TextField>
     </div>
-  );
+  )
 }
 
-export default Profile;
+export default Profile
