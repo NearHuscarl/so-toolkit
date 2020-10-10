@@ -43,17 +43,17 @@ export default function Badges(props: BadgesProps) {
 
   return (
     <Grid container className={classes.root}>
-      <Grid item className={classes.bronze}>
+      <Grid item className={classes.gold}>
         <span>●</span>
-        <span>{badge.bronze}</span>
+        <span>{badge.gold}</span>
       </Grid>
       <Grid item className={classes.silver}>
         <span>●</span>
         <span>{badge.silver}</span>
       </Grid>
-      <Grid item className={classes.gold}>
+      <Grid item className={classes.bronze}>
         <span>●</span>
-        <span>{badge.gold}</span>
+        <span>{badge.bronze}</span>
       </Grid>
     </Grid>
   )
