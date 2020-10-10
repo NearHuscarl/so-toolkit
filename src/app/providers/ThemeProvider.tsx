@@ -1,16 +1,16 @@
-import React, { PropsWithChildren } from "react";
-import { createMuiTheme, Theme } from "@material-ui/core/styles";
-import MuiThemeProvider from "@material-ui/styles/ThemeProvider";
+import React, { PropsWithChildren } from "react"
+import { createMuiTheme, Theme } from "@material-ui/core/styles"
+import MuiThemeProvider from "@material-ui/styles/ThemeProvider"
 
 export type MyTheme = Theme & {
   app: {
     badge: {
-      gold: string;
-      silver: string;
-      bronze: string;
-    };
-  };
-};
+      gold: string
+      silver: string
+      bronze: string
+    }
+  }
+}
 
 export const theme: MyTheme = createMuiTheme({
   palette: {
@@ -33,10 +33,10 @@ export const theme: MyTheme = createMuiTheme({
       bronze: "#ab825f",
     },
   },
-}) as any;
+}) as any
 
 export default function ThemeProvider(props: PropsWithChildren<{}>) {
-  const { children } = props;
+  const { children } = props
 
-  return <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>;
+  return <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
 }

@@ -1,6 +1,6 @@
-import React from "react";
-import { makeStyles } from "app/styles";
-import { Grid } from "@material-ui/core";
+import React from "react"
+import { makeStyles } from "app/styles"
+import { Grid } from "@material-ui/core"
 
 const badgeStyle = {
   display: "flex",
@@ -8,7 +8,7 @@ const badgeStyle = {
   "& > :first-child": {
     marginTop: -1,
   },
-};
+}
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,19 +27,19 @@ const useStyles = makeStyles((theme) => ({
     color: theme.app.badge.gold,
     ...badgeStyle,
   },
-}));
+}))
 
 type BadgesProps = {
   badge: {
-    bronze: number;
-    silver: number;
-    gold: number;
-  };
-};
+    bronze: number
+    silver: number
+    gold: number
+  }
+}
 
 export default function Badges(props: BadgesProps) {
-  const classes = useStyles();
-  const { badge } = props;
+  const classes = useStyles()
+  const { badge } = props
 
   return (
     <Grid container className={classes.root}>
@@ -56,5 +56,5 @@ export default function Badges(props: BadgesProps) {
         <span>{badge.gold}</span>
       </Grid>
     </Grid>
-  );
+  )
 }

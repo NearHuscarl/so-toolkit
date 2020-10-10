@@ -1,5 +1,5 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
-import createSagaMiddleware, { SagaMiddleware } from "redux-saga";
+import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit"
+import createSagaMiddleware, { SagaMiddleware } from "redux-saga"
 import {
   persistStore,
   REGISTER,
@@ -8,21 +8,21 @@ import {
   PAUSE,
   PERSIST,
   PURGE,
-} from "redux-persist";
-import { Middleware } from "redux";
-import { rootSaga, reducer } from "./rootDuck";
-import { __DEV__ } from "app/constants";
-import createLoggerMiddleware from "./createLoggerMiddleware";
+} from "redux-persist"
+import { Middleware } from "redux"
+import { rootSaga, reducer } from "./rootDuck"
+import { __DEV__ } from "app/constants"
+import createLoggerMiddleware from "./createLoggerMiddleware"
 
 function createMiddlewares() {
-  let middlewares: Middleware[] = [];
+  let middlewares: Middleware[] = []
 
   if (__DEV__) {
-    const logger = createLoggerMiddleware();
-    if (logger) middlewares.push(logger);
+    const logger = createLoggerMiddleware()
+    if (logger) middlewares.push(logger)
   }
 
-  const sagaMiddleware = createSagaMiddleware();
+  const sagaMiddleware = createSagaMiddleware()
   const rtkMiddlewares = getDefaultMiddleware({
     thunk: false,
     serializableCheck: {
@@ -30,40 +30,40 @@ function createMiddlewares() {
       // https://github.com/reduxjs/redux-toolkit/issues/121#issuecomment-611641781
       ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
     },
-  });
+  })
 
-  middlewares = middlewares.concat(rtkMiddlewares);
-  middlewares.push(sagaMiddleware);
+  middlewares = middlewares.concat(rtkMiddlewares)
+  middlewares.push(sagaMiddleware)
 
-  return middlewares;
+  return middlewares
 }
 
 function isSagaMiddleware(
   middleware: Middleware
 ): middleware is SagaMiddleware {
-  return middleware.name === "sagaMiddleware";
+  return middleware.name === "sagaMiddleware"
 }
 
 function createStore() {
-  const middlewares = createMiddlewares();
+  const middlewares = createMiddlewares()
   const store = configureStore({
     reducer,
     middleware: middlewares,
-  });
+  })
 
   middlewares.forEach((m) => {
     if (isSagaMiddleware(m)) {
-      m.run(rootSaga);
+      m.run(rootSaga)
     }
-  });
+  })
 
-  return store;
+  return store
 }
 
-const store = createStore();
+const store = createStore()
 
-export type AppStore = typeof store;
-export type RootState = ReturnType<typeof store.getState>;
+export type AppStore = typeof store
+export type RootState = ReturnType<typeof store.getState>
 
-export const persistor = persistStore(store);
-export default store;
+export const persistor = persistStore(store)
+export default store

@@ -1,8 +1,8 @@
-import React from "react";
-import { render } from "@testing-library/react";
-import axios from "axios";
-import UserAutocomplete, { DEBOUNCED_TIME } from "app/widgets/UserAutocomplete";
-import usersResponse from "app/services/userService.data";
+import React from "react"
+import { render } from "@testing-library/react"
+import axios from "axios"
+import UserAutocomplete, { DEBOUNCED_TIME } from "app/widgets/UserAutocomplete"
+import usersResponse from "app/services/userService.data"
 
 // - Test autocomplete return exactly 5 users
 // - Test autocomplete timeout
@@ -18,5 +18,5 @@ test(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
   //   .then((r) => console.log(r));
 
   // render(<UserAutocomplete onChange={(u) => console.log(u)} />);
-  expect(0).toBe(0);
-});
+  expect(0).toBe(0)
+})

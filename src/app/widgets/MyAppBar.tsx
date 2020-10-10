@@ -1,14 +1,14 @@
-import React from "react";
+import React from "react"
 import {
   AppBar,
   Toolbar,
   IconButton,
   Typography,
   Button,
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
-import { makeStyles } from "app/styles";
-import { createStyles } from "@material-ui/styles";
+} from "@material-ui/core"
+import MenuIcon from "@material-ui/icons/Menu"
+import { makeStyles } from "app/styles"
+import { createStyles } from "@material-ui/styles"
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -22,11 +22,11 @@ const useStyles = makeStyles((theme) =>
       flexGrow: 1,
     },
   })
-);
+)
 
 export default function MyAppBar(props) {
-  const classes = useStyles();
-  const onLogin = () => {};
+  const classes = useStyles()
+  const onLogin = () => {}
 
   return (
     <AppBar position="static">
@@ -47,5 +47,5 @@ export default function MyAppBar(props) {
         {/*</Button>*/}
       </Toolbar>
     </AppBar>
-  );
+  )
 }
