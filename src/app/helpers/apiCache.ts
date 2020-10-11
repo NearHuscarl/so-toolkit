@@ -1,5 +1,6 @@
-import LRU from "lru-cache"
+import LRU, { Entry } from "lru-cache"
 import { isPromise } from "app/helpers/index"
+import LRUCache from "lru-cache"
 
 interface IMapCache<K, V> {
   clear(): void
@@ -20,10 +21,8 @@ type CacheSettings<K, V> = {
   onGet?: OnCacheCallback<K, V>
   // extra resolver for key, useful when one cache depend on another one
   keyResolver?: KeyResolver<K, V>
-  cache?: LRU.Entry<K, V>[]
-  max?: number
-  maxAge?: number
-}
+  cache?: Entry<K, V>[]
+} & LRUCache.Options<K, V>
 
 // copied from https://stackoverflow.com/a/30112075/9449426
 // but only implement methods required by lodash.memoize.Cache
@@ -80,6 +79,23 @@ export class ApiCache<K extends string | number, V extends any>
 
   private static _createValue(value: any, directValue: boolean) {
     return directValue ? value : Promise.resolve(value)
+  }
+
+  // like LRU.dump() but doesn't filter out stale entries
+  dumpRaw(): Entry<K, V>[] {
+    return (this._cache as any)
+      .dumpLru()
+      .map((hit) => ({
+        k: hit.key,
+        v: hit.value,
+        e: hit.now + (hit.maxAge || 0),
+      }))
+      .toArray()
+  }
+
+  isStale(entry: Entry<K, V>) {
+    const { e: expire } = entry
+    return Date.now() > expire
   }
 
   private _get(key: K, directValue: boolean) {

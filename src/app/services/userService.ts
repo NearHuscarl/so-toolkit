@@ -63,6 +63,9 @@ export type UserOption = {
 type Props = { store: AppStore; api?: AxiosInstance }
 
 export default class UserService {
+  static USER_CACHE_MAX_AGE = 1000 * 60 * 30
+  static USER_SEARCH_CACHE_MAX_AGE = 1000 * 60 * 60 * 24
+
   private API: AxiosInstance
   getUser: (userId: number) => Promise<User>
   getUserIdsByName: (name: string, options: UserOption) => Promise<number[]>
@@ -72,7 +75,7 @@ export default class UserService {
     const userState = store.getState().user
 
     this.API = api
-    this.getUser = this._memoizeApi(userState.cache, (cache) =>
+    this.getUser = this._memoizeGetUser(userState.cache, (cache) =>
       store.dispatch(userActions.setUserCache(cache))
     )
     this.getUserIdsByName = this._memoizeGetUserIdsByName(
@@ -81,7 +84,7 @@ export default class UserService {
     )
   }
 
-  private _memoizeApi = <K extends number, V extends User>(
+  private _memoizeGetUser = <K extends number, V extends User>(
     initialCache: Entry<K, V>[],
     setCacheAction: (cache: Entry<K, V>[]) => void
   ) => {
@@ -89,6 +92,8 @@ export default class UserService {
 
     memoizedCb.cache = new ApiCache<K, V>({
       cache: initialCache,
+      max: 60,
+      maxAge: UserService.USER_CACHE_MAX_AGE,
       onGet: () => debug("cache hit"),
       onSet: (k, v, cache) => setCacheAction(cache.dump()),
     })
@@ -105,12 +110,19 @@ export default class UserService {
     memoizedCb.cache = new ApiCache<K, V>({
       cache: initialCache,
       max: 500,
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: UserService.USER_SEARCH_CACHE_MAX_AGE,
       keyResolver: (k, userIds, isPromisePending) => {
         if (isPromisePending) {
           return true
         }
         const cache = this._getUserCache()
+        const dump = cache.dumpRaw()
+
+        dump.forEach((e) => {
+          if (userIds?.includes(e.k) && cache.isStale(e)) {
+            cache.set(e.k, e.v) // update expire time
+          }
+        })
         return userIds?.every((id) => cache.has(id)) || false
       },
       onGet: () => debug("cache hit"),

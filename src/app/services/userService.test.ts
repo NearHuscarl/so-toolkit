@@ -1,6 +1,7 @@
 import configureStore from "redux-mock-store"
 import MockAdapter from "axios-mock-adapter"
 import has from "lodash/has"
+import { advanceBy, clear } from "jest-date-mock"
 import UserService, { createApi } from "./userService"
 import userResponse, {
   userResponseMatcher,
@@ -23,6 +24,7 @@ export function createMockedStore() {
 export function createMockedApi(store: AppStore) {
   const mockedApi = createApi(store)
   const mock = new MockAdapter(mockedApi)
+  const users = userNear.concat(userJon)
 
   mock
     .onGet(/\/user\/?\d?\d*/)
@@ -38,14 +40,13 @@ export function createMockedApi(store: AppStore) {
         }
       } else {
         const userId = parseFloat(config.url?.split("/").pop() || "-1")
-        const users = userNear.concat(userJon)
         const user = users.find((u) => u.user_id === userId)
         if (user) {
           return [200, createUsersResponse([user])]
         }
       }
 
-      return [404, "not found!"] // TODO: what happen when not found
+      return [200, createUsersResponse([])]
     })
     .onAny()
     .reply((config) => {
@@ -132,6 +133,69 @@ it("should cache all users found from getUsersByName()", async () => {
 
   // try fetching a new user, should fetch now
   await fetchUser(22656, false)
+  expect(getSpy).toBeCalledTimes(2)
+})
+
+it(`should getUser() cache expire after ${
+  UserService.USER_CACHE_MAX_AGE / (1000 * 60)
+} minutes`, async () => {
+  const { api, userService } = createMockedUserService()
+  const getSpy = jest.spyOn(api, "get")
+  const user = userResponseMatcher.near.items[0]
+  const fetchUser = () =>
+    userService.getUser(901827).then((u) => expect(u).toMatchObject(user))
+
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(1)
+
+  advanceBy(UserService.USER_CACHE_MAX_AGE - 1000)
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(1)
+
+  advanceBy(1000)
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(2)
+})
+
+it(`should getUsersByName() cache expire after ${
+  UserService.USER_SEARCH_CACHE_MAX_AGE / (1000 * 60)
+} minutes`, async () => {
+  const { api, userService } = createMockedUserService()
+  const getSpy = jest.spyOn(api, "get")
+  const user = userResponseMatcher.near.items
+  const fetchUsers = () =>
+    userService
+      .getUsersByName("near")
+      .then((u) => expect(u).toMatchObject(user))
+  const user1 = userResponseMatcher.near.items[0]
+  const fetchUser = () =>
+    userService.getUser(901827).then((u) => expect(u).toMatchObject(user1))
+
+  clear()
+
+  await fetchUsers()
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(1)
+
+  advanceBy(UserService.USER_SEARCH_CACHE_MAX_AGE - 1000)
+  await fetchUsers()
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(1)
+
+  advanceBy(1000)
+  await fetchUsers()
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(2)
+
+  getSpy.mockClear()
+  advanceBy(UserService.USER_SEARCH_CACHE_MAX_AGE + 1000)
+
+  await fetchUsers()
+  await fetchUser()
+  expect(getSpy).toBeCalledTimes(1)
+
+  advanceBy(UserService.USER_SEARCH_CACHE_MAX_AGE - 1000)
+  await fetchUser()
   expect(getSpy).toBeCalledTimes(2)
 })
 
