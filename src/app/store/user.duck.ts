@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import storage from "redux-persist/lib/storage"
 import { PersistConfig, persistReducer } from "app/store/persist"
-import { call, put, takeLatest } from "typed-redux-saga"
+import { put, takeLatest } from "typed-redux-saga"
 import { User } from "app/types"
-import { UserService } from "app/services"
 import { Entry } from "lru-cache"
 
 export interface UserState {
