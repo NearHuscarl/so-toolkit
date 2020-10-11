@@ -4,7 +4,7 @@ import { PersistGate } from "redux-persist/integration/react"
 import "./App.css"
 import { MyAppBar } from "./app/widgets"
 import store, { persistor } from "./app/store/store"
-import { ThemeProvider } from "app/providers"
+import { SeApiServiceProvider, ThemeProvider } from "app/providers"
 import ReputationPage from "app/pages/ReputationPage"
 
 function App() {
@@ -13,8 +13,10 @@ function App() {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider>
-            <MyAppBar />
-            <ReputationPage />
+            <SeApiServiceProvider>
+              <MyAppBar />
+              <ReputationPage />
+            </SeApiServiceProvider>
           </ThemeProvider>
         </PersistGate>
       </Provider>

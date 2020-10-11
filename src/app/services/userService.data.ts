@@ -1,6 +1,6 @@
 import { User } from "app/types"
 
-const userNear = [
+export const userNear: User[] = [
   {
     badge_counts: { bronze: 65, silver: 44, gold: 3 },
     account_id: 485485,
@@ -115,7 +115,7 @@ const userNear = [
   },
 ]
 
-const userJon = [
+export const userJon: User[] = [
   {
     badge_counts: {
       bronze: 8825,
@@ -251,14 +251,12 @@ const userJon = [
 ]
 
 const userResponse = {
-  near1: createUsersResponse([userNear[0]]),
   near: createUsersResponse(userNear),
   jon: createUsersResponse(userJon),
-  jon1: createUsersResponse([userJon[0]]),
 }
 export default userResponse
 
-function createUsersResponse(users: User[]) {
+export function createUsersResponse(users: User[]) {
   return {
     items: users,
     has_more: true,

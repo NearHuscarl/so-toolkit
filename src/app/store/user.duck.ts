@@ -13,7 +13,7 @@ export interface UserState {
   userSearchCache: Entry<string, number[]>[]
 }
 
-const initialState: UserState = {
+export const initialState: UserState = {
   user: undefined,
   userId: undefined,
   cache: [],
@@ -56,8 +56,9 @@ export const reducer = persistReducer(persistConfig, slice.reducer)
 function* getUser(action: ReturnType<typeof actions.getUserRequest>) {
   try {
     const userId = action.payload
-    const response = yield* call(UserService.getUser, userId)
-    yield* put(actions.getUserSuccess(response))
+    // TODO: fix this shit
+    // const response = yield* call(UserService.getUser, userId)
+    // yield* put(actions.getUserSuccess(response))
   } catch (e) {
     console.log(e.response.data) // TODO: add error snackbar
     yield* put(actions.getUserFailure())

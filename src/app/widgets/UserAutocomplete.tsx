@@ -5,11 +5,11 @@ import { Autocomplete } from "@material-ui/lab"
 import parse from "autosuggest-highlight/parse"
 import match from "autosuggest-highlight/match"
 import Grid from "@material-ui/core/Grid"
-import { UserService } from "app/services"
 import { User } from "app/types"
 import { __DEV__ } from "app/constants"
 import { Badges } from "app/widgets/index"
 import { makeStyles } from "app/styles"
+import { useSeApi } from "app/hooks"
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -79,6 +79,7 @@ type UserAutocompleteProps = {
 export const DEBOUNCED_TIME = 350
 
 export default function UserAutocomplete(props: UserAutocompleteProps) {
+  const { userService } = useSeApi()
   const classes = useStyles()
   const [value, setValue] = React.useState<User | null>(null)
   const [loading, setLoading] = React.useState(false)
@@ -94,9 +95,9 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
         setLoading(true)
         const params = { pagesize: 5 }
 
-        return UserService.getUsersByName(input, params).then((result) =>
-          success(result)
-        )
+        return userService
+          .getUsersByName(input, params)
+          .then((result) => success(result))
       },
       DEBOUNCED_TIME,
       { leading: false }
@@ -112,21 +113,23 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
       return undefined
     }
 
-    fetch(inputValue, (results: User[]) => {
-      if (active) {
-        setLoading(false)
-        let newOptions = [] as User[]
-
-        if (value) {
-          newOptions = [value]
-        }
-
-        if (results) {
-          newOptions = [...newOptions, ...results]
-        }
-
-        setOptions(newOptions)
+    fetch(inputValue, (results) => {
+      if (!active) {
+        return
       }
+
+      setLoading(false)
+      let newOptions = [] as User[]
+
+      if (value) {
+        newOptions = [value]
+      }
+
+      if (results) {
+        newOptions = [...newOptions, ...results]
+      }
+
+      setOptions(newOptions)
     })
 
     return () => void (active = false)

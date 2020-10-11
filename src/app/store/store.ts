@@ -1,4 +1,8 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit"
+import {
+  configureStore,
+  EnhancedStore,
+  getDefaultMiddleware,
+} from "@reduxjs/toolkit"
 import createSagaMiddleware, { SagaMiddleware } from "redux-saga"
 import {
   persistStore,
@@ -62,8 +66,8 @@ function createStore() {
 
 const store = createStore()
 
-export type AppStore = typeof store
 export type RootState = ReturnType<typeof store.getState>
+export type AppStore = EnhancedStore<RootState>
 
 export const persistor = persistStore(store)
 export default store

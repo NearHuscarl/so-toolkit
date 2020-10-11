@@ -4,8 +4,10 @@ import {
   TypedUseSelectorHook,
   useSelector as useReduxSelector,
 } from "react-redux"
-import { RootState } from "app/store/store"
+import { RootState, AppStore } from "app/store/store"
+import { useStore as useReduxStore } from "react-redux"
 
 const useSelector: TypedUseSelectorHook<RootState> = useReduxSelector
+const useStore = (): AppStore => useReduxStore<RootState>()
 
-export { useSelector, useDispatch, shallowEqual }
+export { useStore, useSelector, useDispatch, shallowEqual }

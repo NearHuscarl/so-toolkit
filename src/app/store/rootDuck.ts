@@ -2,7 +2,9 @@ import { all } from "redux-saga/effects"
 import * as user from "./user.duck"
 import * as seApi from "./stackexchangeApi.duck"
 
+export const userInitialState = user.initialState
 export const userActions = user.actions
+
 export const seApiActions = seApi.actions
 
 export const reducer = {

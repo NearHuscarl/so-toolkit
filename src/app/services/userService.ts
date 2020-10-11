@@ -1,17 +1,18 @@
-import axios, { AxiosResponse } from "axios"
+import axios, { AxiosInstance, AxiosResponse } from "axios"
 import memoize from "lodash/memoize"
 // NOTE: cannot use Debug directly in module scope when using this import syntax
 // import { Debug } from "app/helpers";
 import Debug from "app/helpers/debug"
 import { ApiResponse, User, UserResponse } from "app/types"
-import { seApiActions, store, userActions } from "app/store"
+import { seApiActions, AppStore, userActions } from "app/store"
 import { ApiCache } from "app/helpers"
 import { SE_API_URL } from "app/constants"
+import { Entry } from "lru-cache"
 
 const debug = Debug("cache")
 const debugApi = Debug("api")
 
-export function createApi() {
+export function createApi(store: AppStore) {
   const api = axios.create({
     baseURL: SE_API_URL,
     params: {
@@ -51,23 +52,6 @@ export function createApi() {
   return api
 }
 
-type AnyFunction = (...any: any) => any
-
-function memoizeApi<T extends AnyFunction>(cb: T): T {
-  const memoizedCb = memoize(cb)
-  const { cache } = store.getState().user
-
-  memoizedCb.cache = new ApiCache<number, User>({
-    cache,
-    onGet: () => debug("cache hit"),
-    onSet: (k, v, cache) => {
-      store.dispatch(userActions.setUserCache(cache.dump()))
-    },
-  })
-
-  return memoizedCb
-}
-
 export type UserSortOption = "reputation" | "creation" | "name" | "modified"
 export type UserOption = {
   sort?: UserSortOption
@@ -76,84 +60,96 @@ export type UserOption = {
   pagesize?: number
 }
 
-// TODO: convert to normal class to test properly
-export default class UserService {
-  static API = createApi()
+type Props = { store: AppStore; api?: AxiosInstance }
 
-  private static _getUserRaw = (userId: number) => {
-    return UserService.API.get<UserResponse>("users/" + userId).then(
+export default class UserService {
+  private API: AxiosInstance
+  getUser: (userId: number) => Promise<User>
+  getUserIdsByName: (name: string, options: UserOption) => Promise<number[]>
+
+  constructor(props: Props) {
+    const { store, api = createApi(store) } = props
+    const userState = store.getState().user
+
+    this.API = api
+    this.getUser = this._memoizeApi(userState.cache, (cache) =>
+      store.dispatch(userActions.setUserCache(cache))
+    )
+    this.getUserIdsByName = this._memoizeGetUserIdsByName(
+      userState.userSearchCache,
+      (cache) => store.dispatch(userActions.setUserSearchCache(cache))
+    )
+  }
+
+  private _memoizeApi = <K extends number, V extends User>(
+    initialCache: Entry<K, V>[],
+    setCacheAction: (cache: Entry<K, V>[]) => void
+  ) => {
+    const memoizedCb = memoize(this._getUserRaw)
+
+    memoizedCb.cache = new ApiCache<K, V>({
+      cache: initialCache,
+      onGet: () => debug("cache hit"),
+      onSet: (k, v, cache) => setCacheAction(cache.dump()),
+    })
+
+    return memoizedCb
+  }
+
+  private _memoizeGetUserIdsByName<K extends string, V extends number[]>(
+    initialCache: Entry<K, V>[],
+    setCacheAction: (cache: Entry<K, V>[]) => void
+  ) {
+    const memoizedCb = memoize(this._getUserIdsByNameRaw)
+
+    memoizedCb.cache = new ApiCache<K, V>({
+      cache: initialCache,
+      max: 500,
+      maxAge: 1000 * 60 * 60 * 24,
+      keyResolver: (k, userIds, isPromisePending) => {
+        if (isPromisePending) {
+          return true
+        }
+        const cache = this._getUserCache()
+        return userIds?.every((id) => cache.has(id)) || false
+      },
+      onGet: () => debug("cache hit"),
+      onSet: (k, v, cache) => setCacheAction(cache.dump()),
+    })
+
+    return memoizedCb
+  }
+
+  private _getUserRaw = (userId: number) => {
+    return this.API.get<UserResponse>("users/" + userId).then(
       (response) => response.data.items[0]
     )
   }
-  private static _getUser: typeof UserService._getUserRaw
 
-  static get getUser() {
-    if (!UserService._getUser) {
-      UserService._getUser = memoizeApi(UserService._getUserRaw)
-    }
-    return UserService._getUser
+  private _getUserCache = () => {
+    return (this.getUser as any).cache as ApiCache<number, User>
   }
 
-  private static _getUserCache() {
-    const _ = UserService.getUser // make sure getUser is initialized
-    return (UserService._getUser as any).cache as ApiCache<number, User>
-  }
-
-  private static _getUserIdsByNameRaw = (
-    name: string,
-    options: UserOption = {}
-  ) => {
+  private _getUserIdsByNameRaw = (name: string, options: UserOption = {}) => {
     const { sort = "reputation", min, max, pagesize } = options
     const params = { inname: name.trim(), sort, min, max, pagesize }
 
-    return UserService.API.get<UserResponse>("users", { params }).then(
-      (response) => {
-        const users = response.data.items
-        const cache = UserService._getUserCache()
+    return this.API.get<UserResponse>("users", { params }).then((response) => {
+      const users = response.data.items
+      const cache = this._getUserCache()
 
-        users.forEach((u) => cache.set(u.user_id, u))
+      users.forEach((u) => cache.set(u.user_id, u))
 
-        return users.map((u) => u.user_id)
-      }
-    )
-  }
-  private static _getUserIdsByName: typeof UserService._getUserIdsByNameRaw
-
-  static get getUserIdsByName() {
-    if (!UserService._getUserIdsByName) {
-      const memoizedCb = memoize(UserService._getUserIdsByNameRaw)
-      const { userSearchCache } = store.getState().user
-
-      memoizedCb.cache = new ApiCache<string, number[]>({
-        cache: userSearchCache,
-        max: 500,
-        maxAge: 1000 * 60 * 60 * 24,
-        keyResolver: (k, userIds, isPromisePending) => {
-          if (isPromisePending) {
-            return true
-          }
-          const cache = UserService._getUserCache()
-          return userIds?.every((id) => cache.has(id)) || false
-        },
-        onGet: () => debug("cache hit"),
-        onSet: (k, v, cache) => {
-          store.dispatch(userActions.setUserSearchCache(cache.dump()))
-        },
-      })
-
-      UserService._getUserIdsByName = memoizedCb
-    }
-    return UserService._getUserIdsByName
+      return users.map((u) => u.user_id)
+    })
   }
 
-  static getUsersByName(name: string, options: UserOption = {}) {
-    return UserService.getUserIdsByName(name, options).then(
-      (userIds: number[]) => {
-        const cache = UserService._getUserCache()
-        return userIds
-          .map((id) => cache.getValue(id))
-          .filter((u): u is User => !!u)
-      }
-    )
+  getUsersByName = (name: string, options: UserOption = {}) => {
+    return this.getUserIdsByName(name, options).then((userIds: number[]) => {
+      const cache = this._getUserCache()
+      return userIds
+        .map((id) => cache.getValue(id))
+        .filter((u): u is User => !!u)
+    })
   }
 }
