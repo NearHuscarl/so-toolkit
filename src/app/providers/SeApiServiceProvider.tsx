@@ -9,11 +9,18 @@ type SeApiService = {
 export const EMPTY_CONTEXT = Object.freeze({} as any)
 export const SeApiContext = React.createContext<SeApiService>(EMPTY_CONTEXT)
 
-export default function SeApiServiceProvider(props: PropsWithChildren<{}>) {
+type Props = PropsWithChildren<{
+  service?: SeApiService
+}>
+
+export default function SeApiServiceProvider(props: Props) {
   const store = useStore()
-  const [value] = React.useState<SeApiService>(() => ({
+  const initialValueCreator = () => ({
     userService: new UserService({ store }),
-  }))
+  })
+  const [value] = React.useState<SeApiService>(
+    props?.service || initialValueCreator
+  )
 
   return (
     <SeApiContext.Provider value={value}>

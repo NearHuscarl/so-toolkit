@@ -96,7 +96,7 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
         const params = { pagesize: 5 }
 
         return userService
-          .getUsersByName(input, params)
+          ?.getUsersByName(input, params)
           .then((result) => success(result))
       },
       DEBOUNCED_TIME,
@@ -143,6 +143,7 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
       getOptionLabel={(option) => {
         return typeof option === "string" ? option : option.display_name
       }}
+      noOptionsText="No user"
       filterOptions={(x) => x}
       options={options}
       autoComplete

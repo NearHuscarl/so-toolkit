@@ -1,56 +1,14 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios"
+import { AxiosInstance } from "axios"
 import memoize from "lodash/memoize"
 // NOTE: cannot use Debug directly in module scope when using this import syntax
 // import { Debug } from "app/helpers";
 import Debug from "app/helpers/debug"
-import { ApiResponse, User, UserResponse } from "app/types"
-import { seApiActions, AppStore, userActions } from "app/store"
-import { ApiCache } from "app/helpers"
-import { SE_API_URL } from "app/constants"
+import { User, UserResponse } from "app/types"
+import { AppStore, userActions } from "app/store"
+import { ApiCache, createApi } from "app/helpers"
 import { Entry } from "lru-cache"
 
 const debug = Debug("cache")
-const debugApi = Debug("api")
-
-export function createApi(store: AppStore) {
-  const api = axios.create({
-    baseURL: SE_API_URL,
-    params: {
-      site: "stackoverflow",
-      key: process.env.REACT_APP_STACK_APP_KEY,
-    },
-  })
-
-  api.interceptors.response.use(
-    (response: AxiosResponse<ApiResponse>) => {
-      const { quota_remaining } = response.data
-      const oldQuotaRemaining = store.getState().seApi.quotaRemaining || 10_001
-
-      debugApi("quota_remaining: " + quota_remaining)
-
-      if (oldQuotaRemaining > quota_remaining) {
-        let message = "quota_changed: %c" + quota_remaining
-        const css = ["color: limegreen;"]
-        const { inname } = response.config.params
-
-        if (inname) {
-          message += " %c" + inname
-          css.push("color: crimson")
-        }
-
-        debugApi(message, ...css)
-        store.dispatch(seApiActions.setQuotaRemaining(quota_remaining))
-      }
-
-      return response
-    },
-    (error) => {
-      return Promise.reject(error)
-    }
-  )
-
-  return api
-}
 
 export type UserSortOption = "reputation" | "creation" | "name" | "modified"
 export type UserOption = {
