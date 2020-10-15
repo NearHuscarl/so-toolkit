@@ -1,6 +1,10 @@
 import { render, RenderOptions } from "@testing-library/react"
 import React from "react"
-import { SeApiServiceProvider, ThemeProvider } from "app/providers"
+import {
+  SeApiServiceProvider,
+  SnackbarProvider,
+  ThemeProvider,
+} from "app/providers"
 import { Provider } from "react-redux"
 import { createMockedUserService } from "app/test/index"
 
@@ -21,7 +25,7 @@ export default function renderApp(
     <Provider store={store}>
       <ThemeProvider>
         <SeApiServiceProvider service={{ userService }}>
-          {ui}
+          <SnackbarProvider>{ui}</SnackbarProvider>
         </SeApiServiceProvider>
       </ThemeProvider>
     </Provider>,

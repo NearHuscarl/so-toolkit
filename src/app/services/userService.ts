@@ -5,7 +5,7 @@ import memoize from "lodash/memoize"
 import Debug from "app/helpers/debug"
 import { User, UserResponse } from "app/types"
 import { AppStore, userActions } from "app/store"
-import { ApiCache, createApi } from "app/helpers"
+import { ApiCache, createApi, getApiError } from "app/helpers"
 import { Entry } from "lru-cache"
 
 const debug = Debug("cache")
@@ -92,7 +92,8 @@ export default class UserService {
 
   private _getUserRaw = (userId: number) => {
     return this.API.get<UserResponse>("users/" + userId).then(
-      (response) => response.data.items[0]
+      (response) => response.data.items![0],
+      (e) => Promise.reject(getApiError(e))
     )
   }
 
@@ -104,14 +105,17 @@ export default class UserService {
     const { sort = "reputation", min, max, pagesize } = options
     const params = { inname: name.trim(), sort, min, max, pagesize }
 
-    return this.API.get<UserResponse>("users", { params }).then((response) => {
-      const users = response.data.items
-      const cache = this._getUserCache()
+    return this.API.get<UserResponse>("users", { params }).then(
+      (response) => {
+        const users = response.data.items!
+        const cache = this._getUserCache()
 
-      users.forEach((u) => cache.set(u.user_id, u))
+        users.forEach((u) => cache.set(u.user_id, u))
 
-      return users.map((u) => u.user_id)
-    })
+        return users.map((u) => u.user_id)
+      },
+      (e) => Promise.reject(getApiError(e))
+    )
   }
 
   getUsersByName = (name: string, options: UserOption = {}) => {

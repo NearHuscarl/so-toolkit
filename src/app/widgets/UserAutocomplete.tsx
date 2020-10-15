@@ -7,9 +7,9 @@ import match from "autosuggest-highlight/match"
 import Grid from "@material-ui/core/Grid"
 import { User } from "app/types"
 import { __DEV__ } from "app/constants"
-import { Badges } from "app/widgets/index"
+import { Badges } from "app/widgets"
 import { makeStyles } from "app/styles"
-import { useSeApi } from "app/hooks"
+import { useIsMounted, useSeApi, useSnackbar } from "app/hooks"
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -80,24 +80,31 @@ export const DEBOUNCED_TIME = 350
 
 export default function UserAutocomplete(props: UserAutocompleteProps) {
   const { userService } = useSeApi()
+  const { createErrorSnackbar } = useSnackbar()
   const classes = useStyles()
   const [value, setValue] = React.useState<User | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
   const [options, setOptions] = React.useState<User[]>([])
+  const isMounted = useIsMounted()
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetch = React.useCallback(
     throttle(
-      (input: string, success: (users: User[]) => void) => {
-        if (input.length <= 1) return
+      (
+        input: string,
+        success: (users: User[]) => void,
+        failure: (e: Error) => void
+      ) => {
+        if (!isMounted() || input.length <= 1) return
 
         setLoading(true)
         const params = { pagesize: 5 }
 
         return userService
           ?.getUsersByName(input, params)
-          .then((result) => success(result))
+          .then(success)
+          .catch(failure)
       },
       DEBOUNCED_TIME,
       { leading: false }
@@ -106,34 +113,41 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
   )
 
   React.useEffect(() => {
-    let active = true
+    let isStale = false
 
     if (inputValue === "") {
       setOptions(value ? [value] : [])
       return undefined
     }
 
-    fetch(inputValue, (results) => {
-      if (!active) {
-        return
+    fetch(
+      inputValue,
+      (results) => {
+        if (isStale) {
+          return
+        }
+
+        setLoading(false)
+        let newOptions = [] as User[]
+
+        if (value) {
+          newOptions = [value]
+        }
+
+        if (results) {
+          newOptions = [...newOptions, ...results]
+        }
+
+        setOptions(newOptions)
+      },
+      (e) => {
+        setLoading(false)
+        createErrorSnackbar(e.message)
       }
+    )
 
-      setLoading(false)
-      let newOptions = [] as User[]
-
-      if (value) {
-        newOptions = [value]
-      }
-
-      if (results) {
-        newOptions = [...newOptions, ...results]
-      }
-
-      setOptions(newOptions)
-    })
-
-    return () => void (active = false)
-  }, [value, inputValue, fetch])
+    return () => void (isStale = true)
+  }, [value, inputValue, fetch, createErrorSnackbar])
 
   return (
     <Autocomplete

@@ -3,6 +3,7 @@ import has from "lodash/has"
 import { AppStore } from "app/store"
 import { createApi } from "app/helpers"
 import userResponse, {
+  createErrorResponse,
   createUsersResponse,
   userJon,
   userNear,
@@ -28,6 +29,17 @@ export default function createMockedApi(
       const { params } = config
 
       if (has(params, "inname")) {
+        const { inname } = params
+
+        switch (inname) {
+          case "near":
+            return [200, userResponse.near]
+          case "jon":
+            return [200, userResponse.jon]
+          case "throw":
+            return [400, createErrorResponse()]
+        }
+
         if (params.inname === "near") {
           return [200, userResponse.near]
         }

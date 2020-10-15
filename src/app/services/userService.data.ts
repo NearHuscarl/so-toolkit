@@ -1,4 +1,4 @@
-import { User } from "app/types"
+import { ApiResponse, User } from "app/types"
 
 export const userNear: User[] = [
   {
@@ -256,12 +256,19 @@ const userResponse = {
 }
 export default userResponse
 
-export function createUsersResponse(users: User[]) {
+export function createUsersResponse(users: User[]): ApiResponse<User> {
   return {
     items: users,
     has_more: true,
     quota_max: 10000,
     quota_remaining: 9977,
+  }
+}
+export function createErrorResponse(): ApiResponse<User> {
+  return {
+    error_id: 502,
+    error_message: "Violation of backoff parameter",
+    error_name: "throttle_violation",
   }
 }
 

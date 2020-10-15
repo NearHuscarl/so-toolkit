@@ -147,10 +147,15 @@ export class ApiCache<K extends string | number, V extends any>
   set(key: K, value: V | Promise<V>): IMapCache<K, V> {
     if (isPromise(value)) {
       this._promiseCache.set(key, value)
-      value.then((v) => {
-        this._promiseCache.del(key)
-        this._set(key, v)
-      })
+      value
+        .then((v) => {
+          this._promiseCache.del(key)
+          this._set(key, v)
+        })
+        .catch(() => {
+          // https://stackoverflow.com/a/57410547/9449426
+          // shallow the error and let the other branch of thenable chain handle it
+        })
     } else {
       this._set(key, value)
     }

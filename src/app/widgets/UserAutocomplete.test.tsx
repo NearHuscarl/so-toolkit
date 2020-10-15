@@ -7,12 +7,14 @@ import { renderApp, Roles } from "app/test"
 import { act } from "react-dom/test-utils"
 
 describe("<UserAutocomplete />", () => {
-  test(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
+  beforeEach(() => {
     // testing lodash.throttle, use modern mode to manipulate both Date and setTimeout()
     // see this recap
     // https://github.com/facebook/jest/issues/3465#issuecomment-504908570
     jest.useFakeTimers("modern")
+  })
 
+  test(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
     const { context } = renderApp(<UserAutocomplete />)
     const getSpy = jest.spyOn(context.api, "get")
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -31,8 +33,6 @@ describe("<UserAutocomplete />", () => {
   })
 
   test(`should show loading when fetching`, async () => {
-    jest.useFakeTimers("modern")
-
     const apiResponseDelay = 200
     renderApp(<UserAutocomplete />, { apiResponseDelay })
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -50,8 +50,6 @@ describe("<UserAutocomplete />", () => {
   })
 
   test(`should return exactly 5 users or no user`, async () => {
-    jest.useFakeTimers("modern")
-
     const apiResponseDelay = 150
     renderApp(<UserAutocomplete />, { apiResponseDelay })
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -77,8 +75,6 @@ describe("<UserAutocomplete />", () => {
   })
 
   test(`should select the user when clicking the option`, async () => {
-    jest.useFakeTimers("modern")
-
     const apiResponseDelay = 150
     const onChange = jest.fn()
     renderApp(<UserAutocomplete onChange={onChange} />, { apiResponseDelay })
@@ -95,12 +91,25 @@ describe("<UserAutocomplete />", () => {
     const firstOption = screen.getAllByText(/near/i)[0]
     await user.click(firstOption)
     expect(onChange).toBeCalledTimes(1)
-    expect(onChange).lastCalledWith(usersResponse.near.items[0])
+    expect(onChange).lastCalledWith(usersResponse.near.items?.[0])
   })
 
-  test(`should stop loading after some time`, async () => {
-    jest.useFakeTimers("modern")
+  test(`should stop loading and show error snackbar when failed`, async () => {
+    const apiResponseDelay = 115
+    renderApp(<UserAutocomplete />, { apiResponseDelay })
+    const searchBox = screen.getByRole(Roles.searchbox)
 
-    expect(true).toBe(true)
+    await user.type(searchBox, "throw")
+    await act(async () => {
+      jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(apiResponseDelay)
+    })
+
+    expect(screen.queryByText("Loading users...")).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Violation of backoff parameter/i)
+    ).toBeInTheDocument()
   })
 })
