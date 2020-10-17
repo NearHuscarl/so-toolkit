@@ -103,10 +103,9 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
         if (!isMounted() || input.length <= 1) return
 
         setLoading(true)
-        const params = { pagesize: 5 }
 
         return userService
-          ?.getUsersByName(input, params)
+          ?.getUsersByName(input, { pagesize: 5 })
           .then(success)
           .catch(failure)
       },
@@ -185,9 +184,9 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
       renderInput={(params) => (
         <TextField {...params} label="Search user..." type="search" />
       )}
-      renderOption={(option) => {
-        const matches = match(option.display_name, inputValue)
-        const parts = parse(option.display_name, matches)
+      renderOption={(user) => {
+        const matches = match(user.display_name, inputValue)
+        const parts = parse(user.display_name, matches)
 
         return (
           <Grid container alignItems="center" spacing={2}>
@@ -195,7 +194,7 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
               <Avatar
                 variant="rounded"
                 className={classes.avatar}
-                src={option.profile_image}
+                src={user.profile_image}
               />
             </Grid>
             <Grid item xs>
@@ -210,20 +209,20 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
                     </span>
                   ))}
                 </span>
-                {option.user_type === "moderator" && (
+                {user.user_type === "moderator" && (
                   <Tooltip title="This user is a moderator">
                     <span className={classes.modFlair}>♦</span>
                   </Tooltip>
                 )}
                 <span className={classes.location}>
-                  {trimLocation(option?.location)}
+                  {trimLocation(user?.location)}
                 </span>
               </div>
               <div className={classes.stats}>
-                <div className={classes.reputation}>
-                  {option.reputation.toLocaleString()}
+                <div title="reputation" className={classes.reputation}>
+                  {user.reputation.toLocaleString()}
                 </div>
-                <Badges badge={option.badge_counts} />
+                <Badges badge={user.badge_counts} />
               </div>
             </Grid>
           </Grid>

@@ -115,7 +115,25 @@ describe("<UserAutocomplete />", () => {
   })
 
   it(`results should be sorted by reputation in descending order`, async () => {
-    expect(true).toBeTruthy() // TODO
+    const apiResponseDelay = 256
+    renderApp(<UserAutocomplete />, { apiResponseDelay })
+    const searchBox = screen.getByRole(Roles.searchbox)
+
+    await user.type(searchBox, "near") // this guy is a moderator
+    await act(async () => {
+      jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(apiResponseDelay)
+    })
+
+    const userReputations = screen.getAllByTitle(/reputation/i)
+    const reputations = userReputations.map((r) =>
+      parseFloat(r.textContent!.replace(",", ""))
+    )
+    const sortedReputations = reputations.slice().sort((a, b) => b - a)
+
+    expect(reputations).toEqual(sortedReputations)
   })
 
   it("Users who are moderators should have a moderator badge", async () => {

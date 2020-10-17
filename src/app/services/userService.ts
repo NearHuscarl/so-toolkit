@@ -94,8 +94,8 @@ export default class UserService {
   }
 
   private _getUserIdsByNameRaw = (name: string, options: UserParams = {}) => {
-    const { sort = "reputation", min, max, pagesize } = options
-    const params = { inname: name.trim(), sort, min, max, pagesize }
+    const { sort = "reputation", order = "desc", min, max, pagesize } = options
+    const params = { inname: name.trim(), sort, order, min, max, pagesize }
 
     return this.API.get<UserResponse>("users", { params }).then(
       (response) => {
