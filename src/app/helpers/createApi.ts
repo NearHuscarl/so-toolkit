@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios"
 import { AppStore, seApiActions } from "app/store"
-import { __DEV__, SE_API_URL } from "app/constants"
+import { SE_API_URL } from "app/constants"
 import { ApiResponse } from "app/types"
 import Debug from "./debug"
 

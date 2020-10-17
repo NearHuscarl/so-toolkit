@@ -16,7 +16,7 @@ export default class UserService {
   static USER_CACHE_MAX_AGE = 1000 * 60 * 30
   static USER_SEARCH_CACHE_MAX_AGE = 1000 * 60 * 60 * 24
 
-  private API: AxiosInstance
+  API: AxiosInstance
   getUser: (userId: number) => Promise<User>
   getUserIdsByName: (name: string, options: UserParams) => Promise<number[]>
 

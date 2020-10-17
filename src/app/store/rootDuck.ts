@@ -1,15 +1,18 @@
 import { all } from "redux-saga/effects"
 import * as user from "./user.duck"
 import * as seApi from "./stackexchangeApi.duck"
+import * as devTool from "./devTool.duck"
 
 export const userInitialState = user.initialState
 export const userActions = user.actions
 
 export const seApiActions = seApi.actions
+export const devToolActions = devTool.actions
 
 export const reducer = {
   user: user.reducer,
   seApi: seApi.reducer,
+  devTool: devTool.reducer,
 }
 
 export function* rootSaga() {
