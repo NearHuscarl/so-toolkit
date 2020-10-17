@@ -2,9 +2,9 @@ import React from "react"
 import { screen } from "@testing-library/react"
 import user from "@testing-library/user-event"
 import UserAutocomplete, { DEBOUNCED_TIME } from "app/widgets/UserAutocomplete"
-import usersResponse from "app/services/userService.data"
 import { renderApp, Roles } from "app/test"
 import { act } from "react-dom/test-utils"
+import { createUsersMatching } from "app/test/fixtures"
 
 describe("<UserAutocomplete />", () => {
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe("<UserAutocomplete />", () => {
     jest.useFakeTimers("modern")
   })
 
-  test(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
+  it(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
     const { context } = renderApp(<UserAutocomplete />)
     const getSpy = jest.spyOn(context.api, "get")
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -32,7 +32,7 @@ describe("<UserAutocomplete />", () => {
     // console.log(hasInputValue(searchBox, "123"))
   })
 
-  test(`should show loading when fetching`, async () => {
+  it(`should show loading when fetching`, async () => {
     const apiResponseDelay = 200
     renderApp(<UserAutocomplete />, { apiResponseDelay })
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -49,7 +49,7 @@ describe("<UserAutocomplete />", () => {
     expect(screen.queryByText("Loading users...")).not.toBeInTheDocument()
   })
 
-  test(`should return exactly 5 users or no user`, async () => {
+  it(`should return exactly 5 users or no user`, async () => {
     const apiResponseDelay = 150
     renderApp(<UserAutocomplete />, { apiResponseDelay })
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -74,7 +74,7 @@ describe("<UserAutocomplete />", () => {
     expect(screen.queryAllByText(/near/i)).toHaveLength(5)
   })
 
-  test(`should select the user when clicking the option`, async () => {
+  it(`should select the user when clicking the option`, async () => {
     const apiResponseDelay = 150
     const onChange = jest.fn()
     renderApp(<UserAutocomplete onChange={onChange} />, { apiResponseDelay })
@@ -91,10 +91,12 @@ describe("<UserAutocomplete />", () => {
     const firstOption = screen.getAllByText(/near/i)[0]
     await user.click(firstOption)
     expect(onChange).toBeCalledTimes(1)
-    expect(onChange).lastCalledWith(usersResponse.near.items?.[0])
+    expect(onChange).lastCalledWith(
+      expect.objectContaining(createUsersMatching("near"))
+    )
   })
 
-  test(`should stop loading and show error snackbar when failed`, async () => {
+  it(`should stop loading and show error snackbar when failed`, async () => {
     const apiResponseDelay = 115
     renderApp(<UserAutocomplete />, { apiResponseDelay })
     const searchBox = screen.getByRole(Roles.searchbox)

@@ -22,20 +22,6 @@ export default function createApi(store: AppStore) {
 
       debugApi("quota_remaining: " + quota_remaining)
 
-      // simulate SE API error to easily test failure case
-      if (__DEV__) {
-        const { inname } = response.config.params
-        if (inname === "throw") {
-          response.data = {
-            error_id: 502,
-            error_name: "throttle_violation",
-            error_message: "Violation of backoff parameter",
-          } as ApiResponse
-
-          return Promise.reject({ response })
-        }
-      }
-
       if (oldQuotaRemaining > quota_remaining) {
         let message = "quota_changed: %c" + quota_remaining
         const css = ["color: limegreen;"]
