@@ -1,0 +1,17 @@
+diff --git a/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js b/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js
+index f723db5..7cdd059 100644
+--- a/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js
++++ b/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js
+@@ -444,7 +444,11 @@ function withGlobal(_global) {
+         if (clock.timers.hasOwnProperty(id)) {
+             // check that the ID matches a timer of the correct type
+             var timer = clock.timers[id];
+-            if (timer.type === ttype) {
++            if (
++              timer.type === ttype ||
++              (timer.type === "Timeout" && ttype === "Interval") ||
++              (timer.type === "Interval" && ttype === "Timeout")
++            ) {
+                 delete clock.timers[id];
+             } else {
+                 var clear =
