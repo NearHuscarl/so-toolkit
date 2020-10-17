@@ -8,19 +8,13 @@ import {
 import { Provider } from "react-redux"
 import { createMockedUserService } from "app/test/index"
 
-export type AppRenderOptions = {
-  apiResponseDelay?: number
-}
-type AllRenderOptions = AppRenderOptions & Omit<RenderOptions, "queries">
+type AllRenderOptions = Omit<RenderOptions, "queries">
 
 export default function renderApp(
   ui: React.ReactElement,
   options: AllRenderOptions = {}
 ) {
-  const { apiResponseDelay = 0, ...opts } = options
-  const { userService, store, api } = createMockedUserService({
-    apiResponseDelay,
-  })
+  const { userService, store, api } = createMockedUserService()
   const renderResult = render(
     <Provider store={store}>
       <ThemeProvider>
@@ -29,7 +23,7 @@ export default function renderApp(
         </SeApiServiceProvider>
       </ThemeProvider>
     </Provider>,
-    opts
+    options
   )
 
   return {

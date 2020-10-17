@@ -2,7 +2,6 @@ import React from "react"
 import { screen } from "@testing-library/react"
 import user from "@testing-library/user-event"
 import UserAutocomplete, { DEBOUNCED_TIME } from "app/widgets/UserAutocomplete"
-import usersResponse from "app/services/userService.data"
 import { renderApp, Roles } from "app/test"
 import { act } from "react-dom/test-utils"
 
@@ -14,7 +13,7 @@ describe("<UserAutocomplete />", () => {
     jest.useFakeTimers("modern")
   })
 
-  test(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
+  it(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
     const { context } = renderApp(<UserAutocomplete />)
     const getSpy = jest.spyOn(context.api, "get")
     const searchBox = screen.getByRole(Roles.searchbox)
@@ -32,9 +31,9 @@ describe("<UserAutocomplete />", () => {
     // console.log(hasInputValue(searchBox, "123"))
   })
 
-  test(`should show loading when fetching`, async () => {
-    const apiResponseDelay = 200
-    renderApp(<UserAutocomplete />, { apiResponseDelay })
+  it(`should show loading when fetching`, async () => {
+    const apiResponseDelay = 400
+    renderApp(<UserAutocomplete />)
     const searchBox = screen.getByRole(Roles.searchbox)
 
     await user.type(searchBox, "123")
@@ -49,35 +48,50 @@ describe("<UserAutocomplete />", () => {
     expect(screen.queryByText("Loading users...")).not.toBeInTheDocument()
   })
 
-  test(`should return exactly 5 users or no user`, async () => {
-    const apiResponseDelay = 150
-    renderApp(<UserAutocomplete />, { apiResponseDelay })
+  it(`should return exactly 5 users or no user`, async () => {
+    const apiResponseDelay = 4000
+    renderApp(<UserAutocomplete />)
     const searchBox = screen.getByRole(Roles.searchbox)
+    const getNow = () => new Date(Date.now()).toISOString()
 
     await user.type(searchBox, "gibberish text")
+    console.log(getNow(), "type done")
     await act(async () => {
-      jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
+      await jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
     })
+    console.log(getNow(), "debounce done")
     await act(async () => {
       jest.advanceTimersByTime(apiResponseDelay)
     })
+    console.log(getNow(), "should have now")
     expect(screen.queryByText("No user")).toBeInTheDocument()
 
     await user.type(searchBox, "near")
     await act(async () => {
       jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
     })
+    console.log(getNow(), "debounce done")
+
     await act(async () => {
       jest.advanceTimersByTime(apiResponseDelay)
     })
+    console.log(getNow(), "should have now1")
+    await act(async () => {
+      jest.advanceTimersByTime(1)
+    })
+    console.log(getNow(), "should have now2")
+    // await act(async () => {
+    //   jest.advanceTimersByTime(apiResponseDelay)
+    // })
+    // console.log(getNow(), "should have now")
     expect(screen.queryByText("No user")).not.toBeInTheDocument()
     expect(screen.queryAllByText(/near/i)).toHaveLength(5)
   })
 
-  test(`should select the user when clicking the option`, async () => {
-    const apiResponseDelay = 150
+  it(`should select the user when clicking the option`, async () => {
+    const apiResponseDelay = 400
     const onChange = jest.fn()
-    renderApp(<UserAutocomplete onChange={onChange} />, { apiResponseDelay })
+    renderApp(<UserAutocomplete onChange={onChange} />)
     const searchBox = screen.getByRole(Roles.searchbox)
 
     await user.type(searchBox, "near")
@@ -91,12 +105,14 @@ describe("<UserAutocomplete />", () => {
     const firstOption = screen.getAllByText(/near/i)[0]
     await user.click(firstOption)
     expect(onChange).toBeCalledTimes(1)
-    expect(onChange).lastCalledWith(usersResponse.near.items?.[0])
+    expect(onChange).lastCalledWith({
+      display_name: expect.stringMatching(/near/i),
+    })
   })
 
-  test(`should stop loading and show error snackbar when failed`, async () => {
-    const apiResponseDelay = 115
-    renderApp(<UserAutocomplete />, { apiResponseDelay })
+  it(`should stop loading and show error snackbar when failed`, async () => {
+    const apiResponseDelay = 400
+    renderApp(<UserAutocomplete />)
     const searchBox = screen.getByRole(Roles.searchbox)
 
     await user.type(searchBox, "throw")
@@ -111,5 +127,9 @@ describe("<UserAutocomplete />", () => {
     expect(
       screen.queryByText(/Violation of backoff parameter/i)
     ).toBeInTheDocument()
+  })
+
+  it(`results should be sorted by reputation in descending order`, async () => {
+    expect(true).toBeTruthy() // TODO
   })
 })

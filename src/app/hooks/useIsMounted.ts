@@ -5,7 +5,6 @@ export function useIsMounted() {
   const isMounted = useCallback(() => isMountedRef.current, [])
 
   useEffect(() => {
-    isMountedRef.current = true
     return () => void (isMountedRef.current = false)
   }, [])
 

@@ -3,20 +3,12 @@ import memoize from "lodash/memoize"
 // NOTE: cannot use Debug directly in module scope when using this import syntax
 // import { Debug } from "app/helpers";
 import Debug from "app/helpers/debug"
-import { User, UserResponse } from "app/types"
+import { User, UserResponse, UserParams } from "app/types"
 import { AppStore, userActions } from "app/store"
 import { ApiCache, createApi, getApiError } from "app/helpers"
 import { Entry } from "lru-cache"
 
 const debug = Debug("cache")
-
-export type UserSortOption = "reputation" | "creation" | "name" | "modified"
-export type UserOption = {
-  sort?: UserSortOption
-  min?: number
-  max?: number
-  pagesize?: number
-}
 
 type Props = { store: AppStore; api?: AxiosInstance }
 
@@ -26,13 +18,13 @@ export default class UserService {
 
   private API: AxiosInstance
   getUser: (userId: number) => Promise<User>
-  getUserIdsByName: (name: string, options: UserOption) => Promise<number[]>
+  getUserIdsByName: (name: string, options: UserParams) => Promise<number[]>
 
   constructor(props: Props) {
     const { store, api = createApi(store) } = props
     const userState = store.getState().user
 
-    this.API = api
+    this.API = api as any
     this.getUser = this._memoizeGetUser(userState.cache, (cache) =>
       store.dispatch(userActions.setUserCache(cache))
     )
@@ -101,14 +93,16 @@ export default class UserService {
     return (this.getUser as any).cache as ApiCache<number, User>
   }
 
-  private _getUserIdsByNameRaw = (name: string, options: UserOption = {}) => {
+  private _getUserIdsByNameRaw = (name: string, options: UserParams = {}) => {
     const { sort = "reputation", min, max, pagesize } = options
     const params = { inname: name.trim(), sort, min, max, pagesize }
-
+    const getNow = () => new Date(Date.now()).toISOString()
+    console.log(getNow(), "request in service")
     return this.API.get<UserResponse>("users", { params }).then(
       (response) => {
         const users = response.data.items!
         const cache = this._getUserCache()
+        console.log(getNow(), "done in service")
 
         users.forEach((u) => cache.set(u.user_id, u))
 
@@ -118,7 +112,7 @@ export default class UserService {
     )
   }
 
-  getUsersByName = (name: string, options: UserOption = {}) => {
+  getUsersByName = (name: string, options: UserParams = {}) => {
     return this.getUserIdsByName(name, options).then((userIds: number[]) => {
       const cache = this._getUserCache()
       return userIds

@@ -26,3 +26,14 @@ export interface User {
   display_name: string
   accept_rate?: number // TODO: find out what this field is about
 }
+
+export type UserSortOption = "reputation" | "creation" | "name" | "modified"
+
+export type UserParams = {
+  inname?: string
+  sort?: UserSortOption
+  order?: "asc" | "desc"
+  min?: number
+  max?: number
+  pagesize?: number
+}

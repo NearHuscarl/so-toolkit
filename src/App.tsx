@@ -2,7 +2,7 @@ import React from "react"
 import { Provider } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
 import "./App.css"
-import { MyAppBar } from "app/widgets"
+import { MyAppBar, DevTool } from "app/widgets"
 import store, { persistor } from "app/store/store"
 import {
   SeApiServiceProvider,
@@ -21,6 +21,7 @@ function App() {
               <SnackbarProvider>
                 <MyAppBar />
                 <ReputationPage />
+                <DevTool />
               </SnackbarProvider>
             </SeApiServiceProvider>
           </ThemeProvider>

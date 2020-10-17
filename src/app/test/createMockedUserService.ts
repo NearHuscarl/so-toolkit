@@ -1,11 +1,10 @@
 import createMockedStore from "./createMockedStore"
-import createMockedApi from "./createMockedApi"
 import { UserService } from "app/services"
-import { AppRenderOptions } from "./renderApp"
+import { createApi } from "app/helpers"
 
-export default function createMockedUserService(option: AppRenderOptions = {}) {
+export default function createMockedUserService() {
   const store = createMockedStore()
-  const api = createMockedApi(store, option)
+  const api = createApi(store)
   const userService = new UserService({ api, store })
 
   return {

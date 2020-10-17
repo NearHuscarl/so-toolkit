@@ -8,5 +8,8 @@ export default function createMockedStore() {
     seApi: {
       quotaRemaining: 0,
     },
+    devTool: {
+      enableMsw: false,
+    } as any,
   })
 }
