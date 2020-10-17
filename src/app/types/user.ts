@@ -4,6 +4,14 @@ export interface BadgeCounts {
   gold: number
 }
 
+type UserType =
+  | "unregistered"
+  | "registered"
+  | "moderator"
+  | "team_admin"
+  | "does_not_exist"
+
+// https://api.stackexchange.com/docs/types/user
 export interface User {
   badge_counts: BadgeCounts
   account_id: number
@@ -17,10 +25,10 @@ export interface User {
   reputation_change_day: number
   reputation: number
   creation_date: number
-  user_type: string
+  user_type: UserType
   user_id: number
   location?: string
-  website_url: string
+  website_url?: string
   link: string
   profile_image: string
   display_name: string

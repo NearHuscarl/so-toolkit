@@ -371,6 +371,31 @@ export const users: User[] = [
     profile_image: "https://i.stack.imgur.com/SSPGk.png?s=128&g=1",
     display_name: "vcsjones",
   },
+  // moderator
+  {
+    badge_counts: {
+      bronze: 88,
+      silver: 71,
+      gold: 16,
+    },
+    account_id: 2751107,
+    is_employee: false,
+    last_modified_date: 1601930100,
+    last_access_date: 1602960288,
+    reputation_change_year: 1311,
+    reputation_change_quarter: 100,
+    reputation_change_month: 100,
+    reputation_change_week: 10,
+    reputation_change_day: 0,
+    reputation: 27648,
+    creation_date: 1368197704,
+    user_type: "moderator",
+    user_id: 2370483,
+    accept_rate: 89,
+    link: "https://stackoverflow.com/users/2370483/machavity",
+    profile_image: "https://i.stack.imgur.com/Y0oJ0.jpg?s=128&g=1",
+    display_name: "Machavity",
+  },
 ]
 
 export function createUsersMatching(name: string, count: number = 1) {

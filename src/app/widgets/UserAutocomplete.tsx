@@ -1,6 +1,6 @@
 import React from "react"
 import throttle from "lodash/throttle"
-import { Avatar, CircularProgress, TextField } from "@material-ui/core"
+import { Avatar, CircularProgress, TextField, Tooltip } from "@material-ui/core"
 import { Autocomplete } from "@material-ui/lab"
 import parse from "autosuggest-highlight/parse"
 import match from "autosuggest-highlight/match"
@@ -19,6 +19,7 @@ const useStyles = makeStyles((theme) => ({
   header: {
     display: "flex",
     alignItems: "baseline",
+    columnGap: 2,
     marginBottom: 3,
   },
   title: {
@@ -29,6 +30,9 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 600,
     color: theme.palette.primary.dark,
     backgroundColor: "rgba(63,81,181,.2)",
+  },
+  modFlair: {
+    color: "#3ca4ff",
   },
   location: {
     fontSize: 11,
@@ -206,6 +210,11 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
                     </span>
                   ))}
                 </span>
+                {option.user_type === "moderator" && (
+                  <Tooltip title="This user is a moderator">
+                    <span className={classes.modFlair}>♦</span>
+                  </Tooltip>
+                )}
                 <span className={classes.location}>
                   {trimLocation(option?.location)}
                 </span>

@@ -1,8 +1,7 @@
 import React from "react"
 import { screen } from "@testing-library/react"
-import user from "@testing-library/user-event"
 import UserAutocomplete, { DEBOUNCED_TIME } from "app/widgets/UserAutocomplete"
-import { renderApp, Roles } from "app/test"
+import { renderApp, Roles, user } from "app/test"
 import { act } from "react-dom/test-utils"
 import { createUsersMatching } from "app/test/fixtures"
 
@@ -113,5 +112,44 @@ describe("<UserAutocomplete />", () => {
     expect(
       screen.queryByText(/Violation of backoff parameter/i)
     ).toBeInTheDocument()
+  })
+
+  it(`results should be sorted by reputation in descending order`, async () => {
+    expect(true).toBeTruthy() // TODO
+  })
+
+  it("Users who are moderators should have a moderator badge", async () => {
+    const apiResponseDelay = 169
+    renderApp(<UserAutocomplete />, { apiResponseDelay })
+    const searchBox = screen.getByRole(Roles.searchbox)
+
+    await user.type(searchBox, "machavity") // this guy is a moderator
+    await act(async () => {
+      jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(apiResponseDelay)
+    })
+
+    let modFlair = screen.queryByText("♦")
+    expect(modFlair).toBeInTheDocument()
+
+    await user.hover(modFlair)
+    await act(async () => {
+      jest.advanceTimersByTime(100) // wait for tooltip to show up
+    })
+    const modFlairTooltip = screen.queryByText("This user is a moderator")
+    expect(modFlairTooltip).toBeInTheDocument()
+
+    await user.type(searchBox, "near") // regular user
+    await act(async () => {
+      jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(apiResponseDelay)
+    })
+
+    modFlair = screen.queryByText("♦")
+    expect(modFlair).not.toBeInTheDocument()
   })
 })
