@@ -21,19 +21,24 @@ export default function renderApp(
   const { userService, store, api } = createMockedUserService({
     apiResponseDelay,
   })
-  const renderResult = render(
+  const App = (comp) => (
     <Provider store={store}>
       <ThemeProvider>
         <SeApiServiceProvider service={{ userService }}>
-          <SnackbarProvider>{ui}</SnackbarProvider>
+          <SnackbarProvider>{comp}</SnackbarProvider>
         </SeApiServiceProvider>
       </ThemeProvider>
-    </Provider>,
-    opts
+    </Provider>
   )
+
+  const renderResult = render(App(ui), opts)
+  const rerender = (newUi: React.ReactElement) => {
+    renderResult.rerender(App(newUi))
+  }
 
   return {
     renderResult,
+    rerender,
     context: {
       store,
       api,

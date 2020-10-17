@@ -1,6 +1,7 @@
 import React from "react"
 import { makeStyles } from "app/styles"
 import { Grid } from "@material-ui/core"
+import { BadgeCounts } from "app/types"
 
 const badgeStyle = {
   display: "flex",
@@ -30,31 +31,30 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 type BadgesProps = {
-  badge: {
-    bronze: number
-    silver: number
-    gold: number
-  }
+  badge: BadgeCounts
 }
 
 export default function Badges(props: BadgesProps) {
   const classes = useStyles()
   const { badge } = props
+  const displayBadge = (type: keyof BadgeCounts) => {
+    if (badge[type] === 0) {
+      return null
+    }
+    const title = `${type} badge`
+    return (
+      <Grid key={title} item className={classes[type]}>
+        <span title={title}>●</span>
+        <span>{badge[type]}</span>
+      </Grid>
+    )
+  }
 
   return (
     <Grid container className={classes.root}>
-      <Grid item className={classes.gold}>
-        <span>●</span>
-        <span>{badge.gold}</span>
-      </Grid>
-      <Grid item className={classes.silver}>
-        <span>●</span>
-        <span>{badge.silver}</span>
-      </Grid>
-      <Grid item className={classes.bronze}>
-        <span>●</span>
-        <span>{badge.bronze}</span>
-      </Grid>
+      {displayBadge("gold")}
+      {displayBadge("silver")}
+      {displayBadge("bronze")}
     </Grid>
   )
 }

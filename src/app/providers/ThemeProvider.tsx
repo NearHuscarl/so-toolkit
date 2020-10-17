@@ -23,6 +23,9 @@ export const theme: MyTheme = createMuiTheme({
     MuiTextField: {
       variant: "outlined",
     },
+    MuiButton: {
+      variant: "contained",
+    },
   },
 
   // @ts-ignore

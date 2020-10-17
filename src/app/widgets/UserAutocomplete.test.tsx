@@ -119,7 +119,7 @@ describe("<UserAutocomplete />", () => {
     renderApp(<UserAutocomplete />, { apiResponseDelay })
     const searchBox = screen.getByRole(Roles.searchbox)
 
-    await user.type(searchBox, "near") // this guy is a moderator
+    await user.type(searchBox, "near")
     await act(async () => {
       jest.advanceTimersByTime(DEBOUNCED_TIME) // trigger fetch
     })
