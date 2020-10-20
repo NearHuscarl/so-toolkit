@@ -1,4 +1,4 @@
-import UserService from "./userService"
+import { UserService } from "./userService"
 import { createMockedUserService } from "app/test"
 import { createUsersMatching } from "app/test/fixtures"
 

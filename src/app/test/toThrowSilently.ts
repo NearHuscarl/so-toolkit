@@ -1,4 +1,4 @@
-export default function toThrowSilently(
+export function toThrowSilently(
   fn: Function,
   error?: string | jest.Constructable | RegExp | Error
 ) {

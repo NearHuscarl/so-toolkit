@@ -1,1 +1,1 @@
-export { default as makeStyles } from "./makeStyles"
+export * from "./makeStyles"

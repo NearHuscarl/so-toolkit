@@ -1,7 +1,7 @@
 import { Middleware } from "redux"
 import { __DEV__ } from "app/constants"
 
-export default function createLoggerMiddleware(): Middleware | null {
+export function createLoggerMiddleware(): Middleware | null {
   if (!__DEV__) {
     return null
   }

@@ -57,12 +57,10 @@ function UserProfile() {
  * and displays the user Avatar with logout option when the user
  * is logged in
  */
-export default function AuthButton() {
+export function AuthButton() {
   const { createErrorSnackbar } = useSnackbar()
   const { authorize } = useAuth()
   const isLogin = useSelector((state) => Boolean(state.auth.me))
-
-  console.log("login", isLogin)
 
   if (!isLogin) {
     const onLogin = async () => {

@@ -1,10 +1,10 @@
 import React, { useRef } from "react"
 import Button from "@material-ui/core/Button"
+import MockAdapter from "axios-mock-adapter"
 import { __DEV__ } from "app/constants"
 import { devToolActions, useDispatch, useSelector } from "app/store"
 import { useAxios } from "app/hooks"
 import { FormControlLabel, Checkbox } from "@material-ui/core"
-import MockAdapter from "axios-mock-adapter"
 
 function useMockedApi() {
   const api = useAxios()

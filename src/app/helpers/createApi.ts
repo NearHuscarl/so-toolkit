@@ -6,7 +6,7 @@ import { ApiResponse } from "app/types"
 
 const debugApi = Debug("app:api")
 
-export default function createApi(store: AppStore) {
+export function createApi(store: AppStore) {
   const api = axios.create({
     baseURL: SE_API_URL,
     params: {

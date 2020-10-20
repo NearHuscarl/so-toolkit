@@ -1,6 +1,6 @@
 import React from "react"
 import { BrowserRouter, Switch, Route } from "react-router-dom"
-import ReputationPage from "app/pages/ReputationPage"
+import { ReputationPage } from "app/pages"
 import { ProtectedRoute } from "./ProtectedRoute"
 
 function Login() {

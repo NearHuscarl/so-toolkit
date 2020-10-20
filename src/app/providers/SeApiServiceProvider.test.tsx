@@ -6,7 +6,7 @@ import {
   createMockedUserService,
   toThrowSilently,
 } from "app/test"
-import SeApiServiceProvider from "./SeApiServiceProvider"
+import { SeApiServiceProvider } from "./SeApiServiceProvider"
 import { useSeApi } from "app/hooks"
 import { AxiosProvider } from "app/providers"
 

@@ -7,7 +7,7 @@ type MockStoreState<StoreState> = {
 
 export type MockedStore = ReturnType<typeof createMockedStore>
 
-export default function createMockedStore() {
+export function createMockedStore() {
   const mockStore = configureStore<RootState>()
   const initialState: MockStoreState<RootState> = {
     user: userInitialState,

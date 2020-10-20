@@ -10,7 +10,7 @@ const debug = Debug("app:cache")
 
 type Props = { store: AppStore; api: AxiosInstance }
 
-export default class UserService {
+export class UserService {
   static USER_CACHE_MAX_AGE = 1000 * 60 * 30
   static USER_SEARCH_CACHE_MAX_AGE = 1000 * 60 * 60 * 24
 

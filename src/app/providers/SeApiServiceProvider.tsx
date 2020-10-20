@@ -14,7 +14,7 @@ type Props = PropsWithChildren<{
   service?: SeApiService
 }>
 
-export default function SeApiServiceProvider(props: Props) {
+export function SeApiServiceProvider(props: Props) {
   const store = useStore()
   const api = useAxios()
   const { children, service } = props

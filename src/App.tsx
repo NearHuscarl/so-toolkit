@@ -1,9 +1,8 @@
 import React from "react"
 import { Provider } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
-import Debug from "debug"
 import { MyAppBar, DevTool } from "app/widgets"
-import store, { persistor } from "app/store/store"
+import { store, persistor } from "app/store/store"
 import {
   SeApiServiceProvider,
   ThemeProvider,
@@ -13,9 +12,7 @@ import {
 } from "app/providers"
 import { Router } from "app/router"
 
-Debug.enable("app:*")
-
-function App() {
+export function App() {
   return (
     <div className="App">
       <Provider store={store}>
@@ -38,5 +35,3 @@ function App() {
     </div>
   )
 }
-
-export default App

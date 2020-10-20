@@ -78,7 +78,7 @@ type UserAutocompleteProps = {
 
 export const DEBOUNCED_TIME = 350
 
-export default function UserAutocomplete(props: UserAutocompleteProps) {
+export function UserAutocomplete(props: UserAutocompleteProps) {
   const { userService } = useSeApi()
   const { createErrorSnackbar } = useSnackbar()
   const classes = useStyles()

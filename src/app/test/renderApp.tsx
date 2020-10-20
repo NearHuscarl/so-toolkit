@@ -16,7 +16,7 @@ type AllRenderOptions = MockOptions & Omit<RenderOptions, "queries">
 
 // TODO: create a lightweight renderMui() to test mui components only
 
-export default function renderApp(
+export function renderApp(
   ui: React.ReactElement,
   options: AllRenderOptions = {}
 ) {

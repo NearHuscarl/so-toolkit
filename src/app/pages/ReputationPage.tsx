@@ -10,7 +10,7 @@ function printObject(value: any) {
   return JSON.stringify(value, null, 4)
 }
 
-export default function ReputationPage() {
+export function ReputationPage() {
   const [user, setUser] = React.useState<User | string>("No user found")
   return (
     <Box p={4} display="flex" justifyContent="center">

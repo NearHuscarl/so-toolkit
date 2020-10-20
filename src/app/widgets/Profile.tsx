@@ -41,7 +41,7 @@ function randomBetween(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-function Profile(props) {
+export function Profile(props) {
   const dispatch = useDispatch()
   const [id, setId] = React.useState(0)
   const user = useSelector((state) => state.user.user)
@@ -92,5 +92,3 @@ function Profile(props) {
     </div>
   )
 }
-
-export default Profile

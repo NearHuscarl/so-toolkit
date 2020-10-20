@@ -1,6 +1,6 @@
 import React from "react"
 import { screen } from "@testing-library/react"
-import UserAutocomplete, { DEBOUNCED_TIME } from "app/widgets/UserAutocomplete"
+import { UserAutocomplete, DEBOUNCED_TIME } from "./UserAutocomplete"
 import { renderApp, Roles, user } from "app/test"
 import { act } from "react-dom/test-utils"
 import { createUsersMatching } from "app/test/fixtures"
@@ -43,7 +43,7 @@ describe("<UserAutocomplete />", () => {
     expect(screen.queryByText("Loading users...")).toBeInTheDocument()
 
     await act(async () => {
-      jest.advanceTimersByTime(apiResponseDelay)
+      jest.advanceTimersByTime(apiResponseDelay + 1)
     })
     expect(screen.queryByText("Loading users...")).not.toBeInTheDocument()
   })

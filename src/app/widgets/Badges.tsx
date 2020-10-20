@@ -34,7 +34,7 @@ type BadgesProps = {
   badge: Badge
 }
 
-export default function Badges(props: BadgesProps) {
+export function Badges(props: BadgesProps) {
   const classes = useStyles()
   const { badge } = props
   const displayBadge = (type: keyof Badge) => {

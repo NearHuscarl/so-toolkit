@@ -16,7 +16,7 @@ import {
 import { Middleware } from "redux"
 import { rootSaga, reducer } from "./rootDuck"
 import { __DEV__ } from "app/constants"
-import createLoggerMiddleware from "./createLoggerMiddleware"
+import { createLoggerMiddleware } from "./createLoggerMiddleware"
 
 function createMiddlewares() {
   let middlewares: Middleware[] = []
@@ -64,10 +64,8 @@ function createStore() {
   return store
 }
 
-const store = createStore()
+export const store = createStore()
+export const persistor = persistStore(store)
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppStore = EnhancedStore<RootState>
-
-export const persistor = persistStore(store)
-export default store

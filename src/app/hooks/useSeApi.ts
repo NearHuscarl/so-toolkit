@@ -2,7 +2,7 @@ import React from "react"
 import { __PRODUCTION__ } from "app/constants"
 import { EMPTY_CONTEXT, SeApiContext } from "app/providers/SeApiServiceProvider"
 
-export default function useSeApi() {
+export function useSeApi() {
   const contextValue = React.useContext(SeApiContext)
 
   if (!__PRODUCTION__) {

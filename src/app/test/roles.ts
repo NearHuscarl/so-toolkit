@@ -2,7 +2,7 @@
 // Go to https://www.w3.org/TR/html-aria/#docconformance
 // and paste the code below in the console to get all roles
 // [...document.querySelectorAll('td code')].filter(n => n.innerText.startsWith('role=')).map(n => n.innerText.replace('role=', '')).filter((r,i,s) => s.indexOf(r) === i)
-const Roles = {
+export const Roles = {
   link: "link",
   article: "article",
   complementary: "complementary",
@@ -45,5 +45,3 @@ const Roles = {
   row: "row",
   treegrid: "treegrid",
 } as const
-
-export default Roles

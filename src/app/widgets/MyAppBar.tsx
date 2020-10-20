@@ -9,7 +9,7 @@ import {
 import MenuIcon from "@material-ui/icons/Menu"
 import { makeStyles } from "app/styles"
 import { createStyles } from "@material-ui/styles"
-import AuthButton from "app/widgets/AuthButton"
+import { AuthButton } from "app/widgets"
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) =>
   })
 )
 
-export default function MyAppBar(props) {
+export function MyAppBar() {
   const classes = useStyles()
 
   return (
