@@ -119,6 +119,11 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
       return undefined
     }
 
+    // user selects the option which is already in the cache
+    if (inputValue === value?.display_name) {
+      return
+    }
+
     fetch(
       inputValue,
       (results) => {
