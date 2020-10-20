@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useCallback } from "react"
-import { authActions, useDispatch, useSelector, useStore } from "app/store"
+import { authActions, useDispatch, useStore } from "app/store"
 import { authenticate } from "app/helpers/oauth"
 import isBefore from "date-fns/isBefore"
 import { useAxios, useSeApi } from "app/hooks"

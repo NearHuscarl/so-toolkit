@@ -17,20 +17,15 @@ type Props = PropsWithChildren<{
 export default function SeApiServiceProvider(props: Props) {
   const store = useStore()
   const api = useAxios()
-  const initialValueCreator = () => ({
+  const { children, service } = props
+  const defaultSetter = () => ({
     userService: new UserService({ store, api }),
   })
-  const [value] = React.useState<SeApiService>(
-    props?.service || initialValueCreator
-  )
+  const [value] = React.useState<SeApiService>(service ?? defaultSetter)
 
   React.useEffect(() => {
     value.userService.API = api
   }, [api, value.userService])
 
-  return (
-    <SeApiContext.Provider value={value}>
-      {props.children}
-    </SeApiContext.Provider>
-  )
+  return <SeApiContext.Provider value={value}>{children}</SeApiContext.Provider>
 }

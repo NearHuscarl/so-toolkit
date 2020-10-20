@@ -8,13 +8,21 @@ export const AxiosContext = React.createContext<AxiosInstance>(
   EMPTY_AXIOS_CONTEXT
 )
 
+type AxiosProviderProps = PropsWithChildren<{
+  api?: AxiosInstance
+}>
+
 /*
  * Use this provider to make sure all services provider wrapped inside it
  * use the same AxiosInstance
  */
-export function AxiosProvider(props: PropsWithChildren<{}>) {
+export function AxiosProvider(props: AxiosProviderProps) {
   const store = useStore()
-  const [value] = React.useState<AxiosInstance>(() => createApi(store))
+  const { api } = props
+  // must use callback here. https://stackoverflow.com/a/64427614/9449426
+  const apiSetter = api ? () => api : undefined
+  const defaultSetter = () => createApi(store)
+  const [value] = React.useState<AxiosInstance>(apiSetter ?? defaultSetter)
 
   return (
     <AxiosContext.Provider value={value}>

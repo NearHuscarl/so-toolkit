@@ -1,6 +1,7 @@
 import { render, RenderOptions } from "@testing-library/react"
 import React from "react"
 import {
+  AxiosProvider,
   SeApiServiceProvider,
   SnackbarProvider,
   ThemeProvider,
@@ -13,6 +14,8 @@ export type MockOptions = {
 }
 type AllRenderOptions = MockOptions & Omit<RenderOptions, "queries">
 
+// TODO: create a lightweight renderMui() to test mui components only
+
 export default function renderApp(
   ui: React.ReactElement,
   options: AllRenderOptions = {}
@@ -21,12 +24,15 @@ export default function renderApp(
   const { userService, store, api } = createMockedUserService({
     apiResponseDelay,
   })
+
   const App = (comp) => (
     <Provider store={store}>
       <ThemeProvider>
-        <SeApiServiceProvider service={{ userService }}>
-          <SnackbarProvider>{comp}</SnackbarProvider>
-        </SeApiServiceProvider>
+        <AxiosProvider api={api}>
+          <SeApiServiceProvider service={{ userService }}>
+            <SnackbarProvider>{comp}</SnackbarProvider>
+          </SeApiServiceProvider>
+        </AxiosProvider>
       </ThemeProvider>
     </Provider>
   )
