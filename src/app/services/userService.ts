@@ -119,7 +119,7 @@ export class UserService {
     return this.API.get<UserResponse>("users", { params }).then(
       (response) => {
         const users = response.data.items!
-        users.forEach((u) => this.userCache.set(u.user_id, u))
+        this.userCache.setMany(users.map((u) => [u.user_id, u]))
         return users.map((u) => u.user_id)
       },
       (e) => Promise.reject(getApiError(e)) // TODO: remove and put in api interceptor

@@ -161,4 +161,19 @@ export class ApiCache<K extends string | number, V extends any>
     }
     return this
   }
+
+  setMany(items: [K, V][]) {
+    const success = {} as any
+    items.forEach(([key, value]) => {
+      if (this._cache.set(key, value)) {
+        success[key] = value
+      }
+    })
+    this.onSet &&
+      this.onSet(
+        Object.keys(success).join(",") as any,
+        Object.values(success) as any,
+        this._cache
+      )
+  }
 }

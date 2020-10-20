@@ -20,21 +20,25 @@ export function createApi(store: AppStore) {
       const { quota_remaining = 10_000 } = response.data
       const oldQuotaRemaining = store.getState().seApi.quotaRemaining || 10_001
 
-      debugApi("quota_remaining: " + quota_remaining)
+      // if (oldQuotaRemaining > quota_remaining) {
+      let message = "quotas: %c" + oldQuotaRemaining
+      const css = ["color: limegreen;"]
+      const { inname } = response.config.params
 
       if (oldQuotaRemaining > quota_remaining) {
-        let message = "quota_changed: %c" + quota_remaining
-        const css = ["color: limegreen;"]
-        const { inname } = response.config.params
-
-        if (inname) {
-          message += " %c" + inname
-          css.push("color: crimson")
-        }
-
-        debugApi(message, ...css)
-        store.dispatch(seApiActions.setQuotaRemaining(quota_remaining))
+        message += "%c → %c" + quota_remaining
+        css.push("color: white")
+        css.push("color: #75BFFF")
       }
+
+      if (inname) {
+        message += " %c" + inname
+        css.push("color: crimson")
+      }
+
+      debugApi(message, ...css)
+      store.dispatch(seApiActions.setQuotaRemaining(quota_remaining))
+      // }
 
       return response
     },
