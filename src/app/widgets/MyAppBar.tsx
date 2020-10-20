@@ -9,6 +9,7 @@ import {
 import MenuIcon from "@material-ui/icons/Menu"
 import { makeStyles } from "app/styles"
 import { createStyles } from "@material-ui/styles"
+import AuthButton from "app/widgets/AuthButton"
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -26,7 +27,6 @@ const useStyles = makeStyles((theme) =>
 
 export default function MyAppBar(props) {
   const classes = useStyles()
-  const onLogin = () => {}
 
   return (
     <AppBar position="static">
@@ -42,9 +42,7 @@ export default function MyAppBar(props) {
         <Typography variant="h6" className={classes.title}>
           SO Toolkit
         </Typography>
-        {/*<Button color="inherit" onClick={onLogin}>*/}
-        {/*  Login*/}
-        {/*</Button>*/}
+        <AuthButton />
       </Toolbar>
     </AppBar>
   )

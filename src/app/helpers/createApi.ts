@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from "axios"
 import { AppStore, seApiActions } from "app/store"
+import Debug from "debug"
 import { SE_API_URL } from "app/constants"
 import { ApiResponse } from "app/types"
-import Debug from "./debug"
 
-const debugApi = Debug("api")
+const debugApi = Debug("app:api")
 
 export default function createApi(store: AppStore) {
   const api = axios.create({

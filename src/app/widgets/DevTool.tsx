@@ -1,51 +1,49 @@
-import React from "react"
+import React, { useRef } from "react"
 import Button from "@material-ui/core/Button"
 import { __DEV__ } from "app/constants"
-import { devToolActions, useDispatch, useSelector, useStore } from "app/store"
-import { useSeApi } from "app/hooks"
-import { createApi } from "app/helpers"
+import { devToolActions, useDispatch, useSelector } from "app/store"
+import { useAxios } from "app/hooks"
 import { FormControlLabel, Checkbox } from "@material-ui/core"
+import MockAdapter from "axios-mock-adapter"
 
 function useMockedApi() {
-  const store = useStore()
+  const api = useAxios()
+  const apiMockRef = useRef<MockAdapter>()
+
   if (__DEV__) {
-    const { getApi } = require("../test/api")
+    const { applyApiMock } = require("../test/api")
     return (mock: boolean) => {
       if (mock) {
-        return getApi(store, { apiResponseDelay: 350 })
+        apiMockRef.current = applyApiMock(api)
       } else {
-        return createApi(store)
+        apiMockRef.current?.restore()
       }
     }
   }
-  return undefined
+  return () => void 0
 }
 
 export function DevTool() {
   const isUsingMockedApi = useSelector((state) => state.devTool.useMockedApi)
   const dispatch = useDispatch()
   const mockApi = useMockedApi()
-  const api = useSeApi()
-  const enableMockedApi = (enable: boolean) => {
-    const { userService } = api
-
-    userService.API = mockApi?.(enable)
-  }
 
   React.useEffect(() => {
     if (__DEV__ && isUsingMockedApi) {
-      enableMockedApi(true)
+      mockApi(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (!__DEV__) return null
 
   const onToggleMockApi = (_, value: boolean) => {
-    enableMockedApi(value)
+    mockApi(value)
     dispatch(devToolActions.useMockedApi(value))
   }
   const onDeleteCache = () => {
     localStorage.removeItem("persist:user")
+    // TODO: purge persist cache in memory
   }
 
   return (

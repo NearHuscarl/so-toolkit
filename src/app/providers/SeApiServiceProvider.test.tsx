@@ -57,4 +57,8 @@ describe("<SeApiServiceProvider />", () => {
       )
     expect(app1).not.toThrow()
   })
+
+  it("service should use the new AxiosInstance if it's updated in <AxiosProvider/>", () => {
+    // TODO
+  })
 })

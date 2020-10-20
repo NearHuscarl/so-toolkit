@@ -1,7 +1,7 @@
 import React from "react"
 import { makeStyles } from "app/styles"
 import { Grid } from "@material-ui/core"
-import { BadgeCounts } from "app/types"
+import { Badge } from "app/types"
 
 const badgeStyle = {
   display: "flex",
@@ -31,13 +31,13 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 type BadgesProps = {
-  badge: BadgeCounts
+  badge: Badge
 }
 
 export default function Badges(props: BadgesProps) {
   const classes = useStyles()
   const { badge } = props
-  const displayBadge = (type: keyof BadgeCounts) => {
+  const displayBadge = (type: keyof Badge) => {
     if (badge[type] === 0) {
       return null
     }

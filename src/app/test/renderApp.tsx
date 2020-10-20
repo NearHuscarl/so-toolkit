@@ -8,10 +8,10 @@ import {
 import { Provider } from "react-redux"
 import { createMockedUserService } from "app/test/index"
 
-export type AppRenderOptions = {
+export type MockOptions = {
   apiResponseDelay?: number
 }
-type AllRenderOptions = AppRenderOptions & Omit<RenderOptions, "queries">
+type AllRenderOptions = MockOptions & Omit<RenderOptions, "queries">
 
 export default function renderApp(
   ui: React.ReactElement,

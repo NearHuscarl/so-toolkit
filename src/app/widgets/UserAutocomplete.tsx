@@ -7,15 +7,11 @@ import match from "autosuggest-highlight/match"
 import Grid from "@material-ui/core/Grid"
 import { User } from "app/types"
 import { __DEV__ } from "app/constants"
-import { Badges } from "app/widgets"
+import { Badges, UserAvatar } from "app/widgets"
 import { makeStyles } from "app/styles"
 import { useIsMounted, useSeApi, useSnackbar } from "app/hooks"
 
 const useStyles = makeStyles((theme) => ({
-  avatar: {
-    // refactoring ui: https://twitter.com/steveschoger/status/1064541476615593984
-    boxShadow: "0 0 1.25px 0 rgba(0, 0, 0, 0.4)",
-  },
   header: {
     display: "flex",
     alignItems: "baseline",
@@ -92,27 +88,27 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
   const [options, setOptions] = React.useState<User[]>([])
   const isMounted = useIsMounted()
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetch = React.useCallback(
-    throttle(
-      (
-        input: string,
-        success: (users: User[]) => void,
-        failure: (e: Error) => void
-      ) => {
-        if (!isMounted() || input.length <= 1) return
+  const fetch = React.useMemo(
+    () =>
+      throttle(
+        (
+          input: string,
+          success: (users: User[]) => void,
+          failure: (e: Error) => void
+        ) => {
+          if (!isMounted() || input.length <= 1) return
 
-        setLoading(true)
+          setLoading(true)
 
-        return userService
-          ?.getUsersByName(input, { pagesize: 5 })
-          .then(success)
-          .catch(failure)
-      },
-      DEBOUNCED_TIME,
-      { leading: false }
-    ),
-    []
+          return userService
+            ?.getUsersByName(input, { pagesize: 5 })
+            .then(success)
+            .catch(failure)
+        },
+        DEBOUNCED_TIME,
+        { leading: false }
+      ),
+    [isMounted, userService]
   )
 
   React.useEffect(() => {
@@ -191,11 +187,7 @@ export default function UserAutocomplete(props: UserAutocompleteProps) {
         return (
           <Grid container alignItems="center" spacing={2}>
             <Grid item>
-              <Avatar
-                variant="rounded"
-                className={classes.avatar}
-                src={user.profile_image}
-              />
+              <UserAvatar src={user.profile_image} />
             </Grid>
             <Grid item xs>
               <div className={classes.header}>

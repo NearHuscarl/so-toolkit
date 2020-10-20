@@ -1,16 +1,14 @@
 import { AxiosInstance } from "axios"
 import memoize from "lodash/memoize"
-// NOTE: cannot use Debug directly in module scope when using this import syntax
-// import { Debug } from "app/helpers";
-import Debug from "app/helpers/debug"
+import Debug from "debug"
 import { User, UserParams, UserResponse } from "app/types"
 import { AppStore, userActions } from "app/store"
-import { ApiCache, createApi, getApiError } from "app/helpers"
-import { Entry } from "lru-cache"
+import { ApiCache, getApiError } from "app/helpers"
+import LRUCache, { Entry } from "lru-cache"
 
-const debug = Debug("cache")
+const debug = Debug("app:cache")
 
-type Props = { store: AppStore; api?: AxiosInstance }
+type Props = { store: AppStore; api: AxiosInstance }
 
 export default class UserService {
   static USER_CACHE_MAX_AGE = 1000 * 60 * 30
@@ -19,45 +17,30 @@ export default class UserService {
   API: AxiosInstance
   getUser: (userId: number) => Promise<User>
   getUserIdsByName: (name: string, options: UserParams) => Promise<number[]>
+  getMe: () => Promise<User>
 
-  constructor(props: Props) {
-    const { store, api = createApi(store) } = props
-    const userState = store.getState().user
-
-    this.API = api
-    this.getUser = this._memoizeGetUser(userState.cache, (cache) =>
-      store.dispatch(userActions.setUserCache(cache))
-    )
-    this.getUserIdsByName = this._memoizeGetUserIdsByName(
-      userState.userSearchCache,
-      (cache) => store.dispatch(userActions.setUserSearchCache(cache))
-    )
-  }
-
-  private _memoizeGetUser = <K extends number, V extends User>(
-    initialCache: Entry<K, V>[],
-    setCacheAction: (cache: Entry<K, V>[]) => void
-  ) => {
-    const memoizedCb = memoize(this._getUserRaw)
-
-    memoizedCb.cache = new ApiCache<K, V>({
+  private userCache!: ApiCache<number, User>
+  private _setUserCache(
+    initialCache: Entry<number, User>[],
+    setCacheAction: (cache: LRUCache<number, User>) => void
+  ) {
+    this.userCache = new ApiCache<number, User>({
       cache: initialCache,
       max: 60,
       maxAge: UserService.USER_CACHE_MAX_AGE,
       onGet: () => debug("cache hit"),
-      onSet: (k, v, cache) => setCacheAction(cache.dump()),
+      onSet: (k, v, cache) => setCacheAction(cache),
     })
 
-    return memoizedCb
+    return this.userCache
   }
 
-  private _memoizeGetUserIdsByName<K extends string, V extends number[]>(
-    initialCache: Entry<K, V>[],
-    setCacheAction: (cache: Entry<K, V>[]) => void
+  private userSearchCache!: ApiCache<string, number[]>
+  private _setUserSearchCache(
+    initialCache: Entry<string, number[]>[],
+    setCacheAction: (cache: LRUCache<string, number[]>) => void
   ) {
-    const memoizedCb = memoize(this._getUserIdsByNameRaw)
-
-    memoizedCb.cache = new ApiCache<K, V>({
+    this.userSearchCache = new ApiCache<string, number[]>({
       cache: initialCache,
       max: 500,
       maxAge: UserService.USER_SEARCH_CACHE_MAX_AGE,
@@ -65,7 +48,7 @@ export default class UserService {
         if (isPromisePending) {
           return true
         }
-        const cache = this._getUserCache()
+        const cache = this.userCache
         const dump = cache.dumpRaw()
 
         dump.forEach((e) => {
@@ -76,10 +59,50 @@ export default class UserService {
         return userIds?.every((id) => cache.has(id)) || false
       },
       onGet: () => debug("cache hit"),
-      onSet: (k, v, cache) => setCacheAction(cache.dump()),
+      onSet: (k, v, cache) => setCacheAction(cache),
     })
 
+    return this.userSearchCache
+  }
+
+  constructor(props: Props) {
+    const { store, api } = props
+    const { user } = store.getState()
+    const userCache = this._setUserCache(user.cache, (cache) =>
+      store.dispatch(userActions.setUserCache(cache.dump()))
+    )
+    const userSearchCache = this._setUserSearchCache(
+      user.userSearchCache,
+      (cache) => store.dispatch(userActions.setUserSearchCache(cache.dump()))
+    )
+
+    this.API = api
+    this.getUser = this._memoizeApi(this._getUserRaw, userCache)
+    this.getMe = this._memoizeApi(this._getMeRaw, userCache)
+    this.getUserIdsByName = this._memoizeApi(
+      this._getUserIdsByNameRaw,
+      userSearchCache
+    )
+  }
+
+  private _memoizeApi = <
+    K extends string | number,
+    V,
+    F extends (...args) => any
+  >(
+    fn: F,
+    cache: ApiCache<K, V>
+  ): F => {
+    const memoizedCb = memoize(fn)
+    memoizedCb.cache = cache
     return memoizedCb
+  }
+
+  private _getMeRaw = () => {
+    return this.API.get<UserResponse>("me/").then(
+      (response) => response.data.items![0],
+      (e) => Promise.reject(getApiError(e))
+    )
   }
 
   private _getUserRaw = (userId: number) => {
@@ -89,10 +112,6 @@ export default class UserService {
     )
   }
 
-  private _getUserCache = () => {
-    return (this.getUser as any).cache as ApiCache<number, User>
-  }
-
   private _getUserIdsByNameRaw = (name: string, options: UserParams = {}) => {
     const { sort = "reputation", order = "desc", min, max, pagesize } = options
     const params = { inname: name.trim(), sort, order, min, max, pagesize }
@@ -100,22 +119,18 @@ export default class UserService {
     return this.API.get<UserResponse>("users", { params }).then(
       (response) => {
         const users = response.data.items!
-        const cache = this._getUserCache()
-
-        users.forEach((u) => cache.set(u.user_id, u))
-
+        users.forEach((u) => this.userCache.set(u.user_id, u))
         return users.map((u) => u.user_id)
       },
-      (e) => Promise.reject(getApiError(e))
+      (e) => Promise.reject(getApiError(e)) // TODO: remove and put in api interceptor
     )
   }
 
   getUsersByName = (name: string, options: UserParams = {}) => {
-    return this.getUserIdsByName(name, options).then((userIds: number[]) => {
-      const cache = this._getUserCache()
-      return userIds
-        .map((id) => cache.getValue(id))
+    return this.getUserIdsByName(name, options).then((userIds: number[]) =>
+      userIds
+        .map((id) => this.userCache.getValue(id))
         .filter((u): u is User => !!u)
-    })
+    )
   }
 }

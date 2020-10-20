@@ -2,25 +2,32 @@ import MockAdapter from "axios-mock-adapter"
 import { createApi } from "app/helpers"
 import { AppStore } from "app/store"
 import createMockedStore from "app/test/createMockedStore"
-import { AppRenderOptions } from "app/test/renderApp"
+import { MockOptions } from "app/test/renderApp"
 import * as user from "./users"
+import { AxiosInstance } from "axios"
 
-function applyMock(mock: MockAdapter) {
+export function applyApiMock(
+  axiosInstance: AxiosInstance,
+  option: MockOptions = {}
+) {
+  const mock = new MockAdapter(axiosInstance, {
+    delayResponse: option.apiResponseDelay,
+  })
+
   Object.values(user).forEach((applyMock) => applyMock(mock))
+
+  return mock
 }
 
 const defaultStore = createMockedStore()
 
 export function getApi(
   store: AppStore = defaultStore,
-  option: AppRenderOptions = {}
+  option: MockOptions = {}
 ) {
   const mockedApi = createApi(store)
-  const mock = new MockAdapter(mockedApi, {
-    delayResponse: option.apiResponseDelay,
-  })
 
-  applyMock(mock)
+  applyApiMock(mockedApi, option)
 
   return mockedApi
 }

@@ -1,8 +1,4 @@
-export interface BadgeCounts {
-  bronze: number
-  silver: number
-  gold: number
-}
+import { Badge } from "app/types/badge"
 
 type UserType =
   | "unregistered"
@@ -13,7 +9,7 @@ type UserType =
 
 // https://api.stackexchange.com/docs/types/user
 export interface User {
-  badge_counts: BadgeCounts
+  badge_counts: Badge
   account_id: number
   is_employee: boolean
   last_modified_date: number
