@@ -1,15 +1,17 @@
 import configureStore from "redux-mock-store"
+import merge from "lodash/merge"
 import { RootState, userInitialState } from "app/store"
 
-type MockStoreState<StoreState> = {
+type RemovePersist<StoreState> = {
   [P in keyof StoreState]: Omit<StoreState[P], "_persist">
 }
+type MockState = RemovePersist<RootState>
 
 export type MockedStore = ReturnType<typeof createMockedStore>
 
-export function createMockedStore() {
+export function createMockedStore(state: Partial<MockState> = {}) {
   const mockStore = configureStore<RootState>()
-  const initialState: MockStoreState<RootState> = {
+  const initialState: MockState = {
     user: userInitialState,
     seApi: {
       quotaRemaining: 0,
@@ -20,5 +22,5 @@ export function createMockedStore() {
     auth: {},
   }
 
-  return mockStore(initialState as any)
+  return mockStore(merge(initialState as any, state))
 }

@@ -43,7 +43,7 @@ describe("<UserAutocomplete />", () => {
     expect(screen.queryByText("Loading users...")).toBeInTheDocument()
 
     await act(async () => {
-      jest.advanceTimersByTime(apiResponseDelay + 1)
+      jest.advanceTimersByTime(apiResponseDelay + 10)
     })
     expect(screen.queryByText("Loading users...")).not.toBeInTheDocument()
   })

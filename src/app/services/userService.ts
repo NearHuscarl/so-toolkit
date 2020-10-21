@@ -99,7 +99,7 @@ export class UserService {
   }
 
   private _getMeRaw = () => {
-    return this.API.get<UserResponse>("me/").then(
+    return this.API.get<UserResponse>("me").then(
       (response) => response.data.items![0],
       (e) => Promise.reject(getApiError(e))
     )

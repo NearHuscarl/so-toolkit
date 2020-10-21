@@ -18,18 +18,15 @@ export function createApi(store: AppStore) {
   api.interceptors.response.use(
     (response: AxiosResponse<ApiResponse>) => {
       const { quota_remaining = 10_000 } = response.data
-      const oldQuotaRemaining = store.getState().seApi.quotaRemaining || 10_001
+      const oldQuotaRemaining = store.getState().seApi.quotaRemaining
 
-      // if (oldQuotaRemaining > quota_remaining) {
       let message = "quotas: %c" + oldQuotaRemaining
       const css = ["color: limegreen;"]
       const { inname } = response.config.params
 
-      if (oldQuotaRemaining > quota_remaining) {
-        message += "%c → %c" + quota_remaining
-        css.push("color: white")
-        css.push("color: #75BFFF")
-      }
+      message += "%c → %c" + quota_remaining
+      css.push("color: white")
+      css.push("color: #75BFFF")
 
       if (inname) {
         message += " %c" + inname
@@ -38,7 +35,6 @@ export function createApi(store: AppStore) {
 
       debugApi(message, ...css)
       store.dispatch(seApiActions.setQuotaRemaining(quota_remaining))
-      // }
 
       return response
     },

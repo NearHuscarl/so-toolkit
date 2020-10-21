@@ -14,7 +14,7 @@ function useMockedApi() {
     const { applyApiMock } = require("../test/api")
     return (mock: boolean) => {
       if (mock) {
-        apiMockRef.current = applyApiMock(api)
+        apiMockRef.current = applyApiMock(api, { apiResponseDelay: 400 })
       } else {
         apiMockRef.current?.restore()
       }
@@ -25,6 +25,7 @@ function useMockedApi() {
 
 export function DevTool() {
   const isUsingMockedApi = useSelector((state) => state.devTool.useMockedApi)
+  const accessToken = useSelector((state) => state.auth.accessToken)
   const dispatch = useDispatch()
   const mockApi = useMockedApi()
 
@@ -59,6 +60,9 @@ export function DevTool() {
         label="Mock API"
       />
       <Button onClick={onDeleteCache}>Delete Cache</Button>
+      <span style={{ fontSize: 9.5, marginLeft: 15 }}>
+        {accessToken ?? "null"}
+      </span>
     </div>
   )
 }

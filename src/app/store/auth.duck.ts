@@ -3,6 +3,7 @@ import storage from "redux-persist/lib/storage"
 import add from "date-fns/add"
 import { PersistConfig, persistReducer } from "app/store/persist"
 import { User } from "app/types"
+import { OAUTH_DURATION } from "app/constants"
 
 export interface AuthState {
   me?: User
@@ -26,7 +27,7 @@ const slice = createSlice({
 
       state.me = user
       state.accessToken = accessToken
-      state.expireDate = add(Date.now(), { days: 14 }).toISOString()
+      state.expireDate = add(Date.now(), OAUTH_DURATION).toISOString()
     },
     unauthorize(state) {
       state.me = undefined

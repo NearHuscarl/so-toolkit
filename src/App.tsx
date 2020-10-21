@@ -18,17 +18,17 @@ export function App() {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider>
-            <AxiosProvider>
-              <SeApiServiceProvider>
-                <AuthProvider>
-                  <SnackbarProvider>
+            <SnackbarProvider>
+              <AxiosProvider>
+                <SeApiServiceProvider>
+                  <AuthProvider>
                     <MyAppBar />
                     <Router />
                     <DevTool />
-                  </SnackbarProvider>
-                </AuthProvider>
-              </SeApiServiceProvider>
-            </AxiosProvider>
+                  </AuthProvider>
+                </SeApiServiceProvider>
+              </AxiosProvider>
+            </SnackbarProvider>
           </ThemeProvider>
         </PersistGate>
       </Provider>

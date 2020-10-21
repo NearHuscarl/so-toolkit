@@ -8,7 +8,7 @@ describe("UserService", () => {
   beforeAll(() => {
     userNear = createUsersMatching("near")
     userJon = createUsersMatching("jon")
-    allUserNear = createUsersMatching("near", 7)
+    allUserNear = createUsersMatching("near", 8)
     allUserJon = createUsersMatching("jon", 7)
   })
 

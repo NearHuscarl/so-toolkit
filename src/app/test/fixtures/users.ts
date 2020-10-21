@@ -4,6 +4,32 @@ export const users: User[] = [
   // near
   {
     badge_counts: {
+      bronze: 38,
+      silver: 13,
+      gold: 4,
+    },
+    account_id: 13078034,
+    is_employee: false,
+    last_modified_date: 1603186800,
+    last_access_date: 1603228745,
+    reputation_change_year: 3925,
+    reputation_change_quarter: 1033,
+    reputation_change_month: 1033,
+    reputation_change_week: 203,
+    reputation_change_day: 43,
+    reputation: 4348,
+    creation_date: 1520315088,
+    user_type: "registered",
+    user_id: 9449426,
+    location: "Vietnam",
+    website_url: "https://near.netlify.app",
+    link: "https://stackoverflow.com/users/9449426/nearhuscarl",
+    profile_image:
+      "https://www.gravatar.com/avatar/68f65f424fd34b2e1a7e875f9311f88c?s=128&d=identicon&r=PG&f=1",
+    display_name: "NearHuscarl",
+  },
+  {
+    badge_counts: {
       bronze: 65,
       silver: 44,
       gold: 3,

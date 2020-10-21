@@ -1,7 +1,7 @@
 import { all } from "redux-saga/effects"
 import * as auth from "./auth.duck"
 import * as user from "./user.duck"
-import * as seApi from "./stackexchangeApi.duck"
+import * as seApi from "app/store/seApi.duck"
 import * as devTool from "./devTool.duck"
 
 export const userInitialState = user.initialState

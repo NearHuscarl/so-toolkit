@@ -6,8 +6,9 @@
 
 // example oauth library
 // https://dev.sstatic.net/apiv2/js/all.js
-import { openPopupWindow, serializeSearchParams } from "app/helpers"
 import isArray from "lodash/isArray"
+import { openPopupWindow, serializeSearchParams } from "app/helpers"
+import * as oauth from "./oauth"
 
 // https://api.stackexchange.com/docs/authentication#scope
 type Scope = "read_inbox" | "no_expiry" | "write_access" | "private_info"
@@ -40,7 +41,9 @@ type AuthorizationResult = {
   expireDate: Date
 }
 
-export function authenticate(option: AuthenticationOption) {
+// workaround to be able to mock named function
+// https://stackoverflow.com/a/52770749/9449426
+export function _authenticate(option: AuthenticationOption) {
   return new Promise<AuthorizationResult>((resolve, reject) => {
     const queryParams = buildQueryParams(option)
     const popup = openPopupWindow(
@@ -64,4 +67,8 @@ export function authenticate(option: AuthenticationOption) {
       resolve({ accessToken, expireDate })
     })
   })
+}
+
+export function authenticate(option: AuthenticationOption) {
+  return oauth._authenticate(option)
 }
