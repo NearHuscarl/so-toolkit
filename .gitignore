@@ -2,6 +2,8 @@
 
 # yarn
 .yarn/install-state.gz
+MyTest.tsx
+MyTest.test.tsx
 
 # ----- My Custom ignore files END -----
 
