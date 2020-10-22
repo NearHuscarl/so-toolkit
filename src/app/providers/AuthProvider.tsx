@@ -2,9 +2,9 @@ import React, { PropsWithChildren, useCallback } from "react"
 import { authActions, useDispatch, useStore } from "app/store"
 import { authenticate } from "app/helpers/oauth"
 import isBefore from "date-fns/isBefore"
-import { useAxios, useSeApi, useSnackbar } from "app/hooks"
+import { useAxios, useSeApi, useTry } from "app/hooks"
 import { ApiResponse } from "app/types"
-import { accessTokenErrorIds, ApiError, getApiError } from "app/helpers"
+import { accessTokenErrorIds, ApiError } from "app/helpers"
 import { AuthorizeResult } from "app/store/auth.duck"
 
 type Context = {
@@ -58,7 +58,7 @@ function useAuthContext(): Context {
       } else {
         dispatch(authActions.unauthorizeFailure())
       }
-      return Promise.reject(getApiError(e))
+      return Promise.reject(e)
     }
   }, [api, dispatch, store])
 
@@ -87,8 +87,7 @@ function useAuthContext(): Context {
       return result
     } catch (e) {
       dispatch(authActions.authorizeFailure())
-
-      return Promise.reject(getApiError(e))
+      return Promise.reject(e)
     }
   }, [api.defaults.params, dispatch, isLogin, unauthorize, userService])
 
@@ -104,13 +103,13 @@ function useAuthContext(): Context {
 
 export function AuthProvider(props: PropsWithChildren<{}>) {
   const [value] = React.useState<Context>(useAuthContext())
-  const { createErrorSnackbar } = useSnackbar()
+  const $try = useTry()
 
   React.useEffect(() => {
     const { isTokenValid, unauthorize, isLogin } = value
 
     if (isLogin() && !isTokenValid()) {
-      unauthorize().catch((e) => createErrorSnackbar(e))
+      $try(unauthorize)
     }
     // eslint-disable-next-line
   }, [])

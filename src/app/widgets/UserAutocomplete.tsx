@@ -1,15 +1,16 @@
 import React from "react"
 import throttle from "lodash/throttle"
-import { Avatar, CircularProgress, TextField, Tooltip } from "@material-ui/core"
+import { AxiosError } from "axios"
+import { CircularProgress, TextField, Tooltip, Grid } from "@material-ui/core"
 import { Autocomplete } from "@material-ui/lab"
 import parse from "autosuggest-highlight/parse"
 import match from "autosuggest-highlight/match"
-import Grid from "@material-ui/core/Grid"
-import { User } from "app/types"
+import { ApiResponse, User } from "app/types"
 import { __DEV__ } from "app/constants"
 import { Badges, UserAvatar } from "app/widgets"
 import { makeStyles } from "app/styles"
 import { useIsMounted, useSeApi, useSnackbar } from "app/hooks"
+import { getApiError } from "app/helpers"
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -94,7 +95,7 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
         (
           input: string,
           success: (users: User[]) => void,
-          failure: (e: Error) => void
+          failure: (e: AxiosError<ApiResponse>) => void
         ) => {
           if (!isMounted() || input.length <= 1) return
 
@@ -146,7 +147,7 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
       },
       (e) => {
         setLoading(false)
-        createErrorSnackbar(e.message)
+        createErrorSnackbar(getApiError(e).message)
       }
     )
 

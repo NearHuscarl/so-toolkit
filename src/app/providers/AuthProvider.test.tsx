@@ -14,6 +14,7 @@ import { getApi } from "app/test/api"
 import { mockAccessToken, users } from "app/test/fixtures"
 import * as oauth from "app/helpers/oauth"
 import { authActions, seApiActions } from "app/store"
+import { getApiError } from "app/helpers"
 
 describe("<AuthProvider />", () => {
   function renderUI(ui: React.ReactElement, store = createMockedStore()) {
@@ -101,9 +102,12 @@ describe("<AuthProvider />", () => {
     function Test() {
       const { authorize } = useAuth()
       const onClick = async () => {
-        await expect(authorize()).rejects.toThrow(
-          "token not found (does not exist)."
-        )
+        await expect(
+          authorize().then(
+            (d) => d,
+            (e) => Promise.reject(getApiError(e))
+          )
+        ).rejects.toThrow("token not found (does not exist).")
       }
 
       return <button onClick={onClick}>click</button>

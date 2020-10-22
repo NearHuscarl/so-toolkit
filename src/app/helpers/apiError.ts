@@ -26,12 +26,11 @@ type AccessTokenErrorProps = {
  * Error related to access token that is either invalid, insecure or expired
  * https://api.stackexchange.com/docs/error-handling
  */
-export class AccessTokenError extends Error {
+export class AccessTokenError extends ApiError {
   readonly id: AccessTokenErrorId
 
-  constructor({ id, name, message }: AccessTokenErrorProps) {
-    super(message)
-    this.name = name
-    this.id = id
+  constructor(props: AccessTokenErrorProps) {
+    super(props)
+    this.id = props.id
   }
 }

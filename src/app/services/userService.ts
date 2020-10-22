@@ -3,7 +3,7 @@ import memoize from "lodash/memoize"
 import Debug from "debug"
 import { User, UserParams, UserResponse } from "app/types"
 import { AppStore, userActions } from "app/store"
-import { ApiCache, getApiError } from "app/helpers"
+import { ApiCache } from "app/helpers"
 import LRUCache, { Entry } from "lru-cache"
 
 const debug = Debug("app:cache")
@@ -100,15 +100,13 @@ export class UserService {
 
   private _getMeRaw = () => {
     return this.API.get<UserResponse>("me").then(
-      (response) => response.data.items![0],
-      (e) => Promise.reject(getApiError(e))
+      (response) => response.data.items![0]
     )
   }
 
   private _getUserRaw = (userId: number) => {
     return this.API.get<UserResponse>("users/" + userId).then(
-      (response) => response.data.items![0],
-      (e) => Promise.reject(getApiError(e))
+      (response) => response.data.items![0]
     )
   }
 
@@ -116,14 +114,11 @@ export class UserService {
     const { sort = "reputation", order = "desc", min, max, pagesize } = options
     const params = { inname: name.trim(), sort, order, min, max, pagesize }
 
-    return this.API.get<UserResponse>("users", { params }).then(
-      (response) => {
-        const users = response.data.items!
-        this.userCache.setMany(users.map((u) => [u.user_id, u]))
-        return users.map((u) => u.user_id)
-      },
-      (e) => Promise.reject(getApiError(e)) // TODO: remove and put in api interceptor
-    )
+    return this.API.get<UserResponse>("users", { params }).then((response) => {
+      const users = response.data.items!
+      this.userCache.setMany(users.map((u) => [u.user_id, u]))
+      return users.map((u) => u.user_id)
+    })
   }
 
   getUsersByName = (name: string, options: UserParams = {}) => {

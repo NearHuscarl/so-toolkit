@@ -1,6 +1,6 @@
 import React from "react"
 import { Button, MenuItem, Menu } from "@material-ui/core"
-import { useAuth, useSnackbar } from "app/hooks"
+import { useAuth, useTry } from "app/hooks"
 import { useSelector } from "app/store"
 import { UserAvatar } from "app/widgets/UserAvatar"
 import { makeStyles } from "app/styles"
@@ -17,16 +17,16 @@ function UserProfile() {
   const isLoading = useSelector((state) => state.auth.loading)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { unauthorize } = useAuth()
+  const $try = useTry()
   const onOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
-  const { createErrorSnackbar } = useSnackbar()
   const onClose = () => {
     setAnchorEl(null)
   }
   const onLogout = () => {
     onClose()
-    return unauthorize().catch((e) => createErrorSnackbar(e.message))
+    $try(unauthorize)
   }
 
   return (
@@ -62,22 +62,18 @@ function UserProfile() {
  * is logged in
  */
 export function AuthButton() {
-  const { createErrorSnackbar } = useSnackbar()
   const { authorize } = useAuth()
   const isLogin = useSelector((state) => Boolean(state.auth.me))
   const isLoading = useSelector((state) => state.auth.loading)
+  const $try = useTry()
 
   if (!isLogin) {
-    const onLogin = async () => {
-      try {
-        await authorize()
-      } catch (e) {
-        createErrorSnackbar(e.message)
-      }
-    }
-
     return (
-      <Button disabled={isLoading} color="secondary" onClick={onLogin}>
+      <Button
+        disabled={isLoading}
+        color="secondary"
+        onClick={() => $try(authorize)}
+      >
         Login
       </Button>
     )
