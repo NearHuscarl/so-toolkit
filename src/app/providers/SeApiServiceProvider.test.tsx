@@ -1,14 +1,12 @@
 import React from "react"
 import { Provider } from "react-redux"
 import { render } from "@testing-library/react"
-import {
-  createMockedStore,
-  createMockedUserService,
-  toThrowSilently,
-} from "app/test"
+import { createMockedStore, toThrowSilently } from "app/test"
 import { SeApiServiceProvider } from "./SeApiServiceProvider"
 import { useSeApi } from "app/hooks"
 import { AxiosProvider } from "app/providers"
+import { getApi } from "app/test/api"
+import { UserService } from "app/services"
 
 describe("<SeApiServiceProvider />", () => {
   it("should throw if not wrapped inside <Provider/> and <AxiosProvider/>", () => {
@@ -29,7 +27,8 @@ describe("<SeApiServiceProvider />", () => {
 
   it("should provide the API to children", () => {
     const store = createMockedStore()
-    const { userService } = createMockedUserService()
+    const api = getApi(store)
+    const userService = new UserService({ api, store })
 
     function Test() {
       const api = useSeApi()
@@ -39,7 +38,7 @@ describe("<SeApiServiceProvider />", () => {
 
     render(
       <Provider store={store}>
-        <AxiosProvider>
+        <AxiosProvider api={api}>
           <SeApiServiceProvider service={{ userService }}>
             <Test />
           </SeApiServiceProvider>

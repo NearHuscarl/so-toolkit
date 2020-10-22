@@ -7,7 +7,8 @@ import {
   ThemeProvider,
 } from "app/providers"
 import { Provider } from "react-redux"
-import { createMockedUserService } from "app/test/index"
+import { createMockedStore } from "app/test/index"
+import { getApi } from "app/test/api"
 
 export type MockOptions = {
   apiResponseDelay?: number
@@ -21,15 +22,14 @@ export function renderApp(
   options: AllRenderOptions = {}
 ) {
   const { apiResponseDelay = 0, ...opts } = options
-  const { userService, store, api } = createMockedUserService({
-    apiResponseDelay,
-  })
+  const store = createMockedStore()
+  const api = getApi(store, { apiResponseDelay })
 
   const App = (comp) => (
     <Provider store={store}>
       <ThemeProvider>
         <AxiosProvider api={api}>
-          <SeApiServiceProvider service={{ userService }}>
+          <SeApiServiceProvider>
             <SnackbarProvider>{comp}</SnackbarProvider>
           </SeApiServiceProvider>
         </AxiosProvider>

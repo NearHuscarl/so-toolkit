@@ -139,7 +139,7 @@ describe("<AuthProvider />", () => {
 
     const actions = store.getActions()
 
-    expect(api.history.get[0].url).toBe(
+    expect(api.history.get).lastRequestedWith(
       `access-tokens/${mockAccessToken}/invalidate`
     )
     expect(api.defaults.params.access_token).toBeUndefined()
@@ -181,9 +181,10 @@ describe("<AuthProvider />", () => {
     })
 
     expect(api.history.get).toHaveLength(2)
-    expect(api.history.get[0].url).toBe(
+    expect(api.history.get).nthRequestedWith(
+      1,
       `access-tokens/${mockAccessToken}/invalidate`
     )
-    expect(api.history.get[1].url).toBe("me")
+    expect(api.history.get).lastRequestedWith("me")
   })
 })

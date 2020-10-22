@@ -26,8 +26,6 @@ export function applyApiMock(
   return mock
 }
 
-const defaultStore = createMockedStore()
-
 type HttpMethod = "get" | "put" | "post" | "delete"
 export type MockAxiosInstance = AxiosInstance & {
   history: Record<HttpMethod, AxiosRequestConfig[]>
@@ -35,7 +33,7 @@ export type MockAxiosInstance = AxiosInstance & {
 }
 
 export function getApi(
-  store: AppStore = defaultStore,
+  store: AppStore = createMockedStore(),
   option: MockOptions = {}
 ): MockAxiosInstance {
   const mockedApi: any = createApi(store)
