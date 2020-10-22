@@ -29,8 +29,9 @@ export function applyApiMock(
 const defaultStore = createMockedStore()
 
 type HttpMethod = "get" | "put" | "post" | "delete"
-type MockAxiosInstance = AxiosInstance & {
+export type MockAxiosInstance = AxiosInstance & {
   history: Record<HttpMethod, AxiosRequestConfig[]>
+  resetHistory: () => void
 }
 
 export function getApi(
@@ -41,6 +42,7 @@ export function getApi(
   const mock = applyApiMock(mockedApi, option)
 
   mockedApi.history = mock.history
+  mockedApi.resetHistory = mock.resetHistory
 
   return mockedApi
 }
