@@ -3,7 +3,7 @@ import MockAdapter from "axios-mock-adapter"
 import { createApi } from "app/helpers"
 import { AppStore } from "app/store"
 import { createMockedStore } from "app/test"
-import { MockOptions } from "app/test/renderApp"
+import { MockOptions } from "app/test/renderer"
 import * as user from "./users"
 import * as accessTokens from "./accessTokens"
 

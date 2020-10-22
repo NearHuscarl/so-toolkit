@@ -15,8 +15,6 @@ export type MockOptions = {
 }
 type AllRenderOptions = MockOptions & Omit<RenderOptions, "queries">
 
-// TODO: create a lightweight renderMui() to test mui components only
-
 export function renderApp(
   ui: React.ReactElement,
   options: AllRenderOptions = {}
@@ -50,4 +48,14 @@ export function renderApp(
       api,
     },
   }
+}
+
+export function renderMui(ui: React.ReactElement, options: RenderOptions = {}) {
+  const App = (comp) => <ThemeProvider>{comp}</ThemeProvider>
+  const renderResult = render(App(ui), options)
+  const rerender = (newUi: React.ReactElement) => {
+    renderResult.rerender(App(newUi))
+  }
+
+  return { renderResult, rerender }
 }

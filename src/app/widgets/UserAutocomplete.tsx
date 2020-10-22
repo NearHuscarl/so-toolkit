@@ -3,11 +3,9 @@ import throttle from "lodash/throttle"
 import { AxiosError } from "axios"
 import { CircularProgress, TextField, Tooltip, Grid } from "@material-ui/core"
 import { Autocomplete } from "@material-ui/lab"
-import parse from "autosuggest-highlight/parse"
-import match from "autosuggest-highlight/match"
 import { ApiResponse, User } from "app/types"
 import { __DEV__ } from "app/constants"
-import { Badges, UserAvatar } from "app/widgets"
+import { Badges, Highlighter, UserAvatar } from "app/widgets"
 import { makeStyles } from "app/styles"
 import { useIsMounted, useSeApi, useSnackbar } from "app/hooks"
 import { getApiError } from "app/helpers"
@@ -22,11 +20,6 @@ const useStyles = makeStyles((theme) => ({
   title: {
     fontWeight: "bolder",
     marginRight: 3,
-  },
-  highlight: {
-    fontWeight: 600,
-    color: theme.palette.primary.dark,
-    backgroundColor: "rgba(63,81,181,.2)",
   },
   modFlair: {
     color: "#3ca4ff",
@@ -187,9 +180,6 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
         <TextField {...params} label="Search user..." type="search" />
       )}
       renderOption={(user) => {
-        const matches = match(user.display_name, inputValue)
-        const parts = parse(user.display_name, matches)
-
         return (
           <Grid container alignItems="center" spacing={2}>
             <Grid item>
@@ -197,16 +187,11 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
             </Grid>
             <Grid item xs>
               <div className={classes.header}>
-                <span className={classes.title}>
-                  {parts.map((part, index) => (
-                    <span
-                      key={index}
-                      className={part.highlight ? classes.highlight : ""}
-                    >
-                      {part.text}
-                    </span>
-                  ))}
-                </span>
+                <Highlighter
+                  className={classes.title}
+                  textToHighlight={user.display_name}
+                  searchWord={inputValue}
+                />
                 {user.user_type === "moderator" && (
                   <Tooltip title="This user is a moderator">
                     <span className={classes.modFlair}>♦</span>

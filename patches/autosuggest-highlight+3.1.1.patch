@@ -1,0 +1,14 @@
+diff --git a/node_modules/autosuggest-highlight/match/index.js b/node_modules/autosuggest-highlight/match/index.js
+index 210514d..17d3058 100644
+--- a/node_modules/autosuggest-highlight/match/index.js
++++ b/node_modules/autosuggest-highlight/match/index.js
+@@ -26,8 +26,7 @@ module.exports = function match(text, query) {
+       })
+       .reduce(function(result, word) {
+         var wordLen = word.length;
+-        var prefix = wordCharacterRegex.test(word[0]) ? '\\b' : '';
+-        var regex = new RegExp(prefix + escapeRegexCharacters(word), 'i');
++        var regex = new RegExp(escapeRegexCharacters(word), 'i');
+         var index = text.search(regex);
+ 
+         if (index > -1) {

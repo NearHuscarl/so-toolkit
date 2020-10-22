@@ -1,4 +1,4 @@
-export * from "./renderApp"
+export * from "./renderer"
 export * from "./createMockedStore"
 export * from "./roles"
 export * from "./hasInputValue"
