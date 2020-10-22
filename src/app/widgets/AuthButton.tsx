@@ -14,17 +14,19 @@ const useProfileStyles = makeStyles({
 function UserProfile() {
   const classes = useProfileStyles()
   const me = useSelector((state) => state.auth.me)
+  const isLoading = useSelector((state) => state.auth.loading)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { unauthorize } = useAuth()
   const onOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
+  const { createErrorSnackbar } = useSnackbar()
   const onClose = () => {
     setAnchorEl(null)
   }
   const onLogout = () => {
     onClose()
-    return unauthorize()
+    return unauthorize().catch((e) => createErrorSnackbar(e.message))
   }
 
   return (
@@ -46,7 +48,9 @@ function UserProfile() {
         }}
       >
         {/*<MenuItem onClick={handleClose}>Profile</MenuItem>*/}
-        <MenuItem onClick={onLogout}>Logout</MenuItem>
+        <MenuItem disabled={isLoading} onClick={onLogout}>
+          Logout
+        </MenuItem>
       </Menu>
     </>
   )
@@ -61,6 +65,7 @@ export function AuthButton() {
   const { createErrorSnackbar } = useSnackbar()
   const { authorize } = useAuth()
   const isLogin = useSelector((state) => Boolean(state.auth.me))
+  const isLoading = useSelector((state) => state.auth.loading)
 
   if (!isLogin) {
     const onLogin = async () => {
@@ -72,7 +77,7 @@ export function AuthButton() {
     }
 
     return (
-      <Button color="secondary" onClick={onLogin}>
+      <Button disabled={isLoading} color="secondary" onClick={onLogin}>
         Login
       </Button>
     )

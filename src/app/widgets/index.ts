@@ -1,6 +1,6 @@
 export * from "./Profile"
 export * from "./UserAutocomplete"
-export * from "./MyAppBar"
+export * from "./AppBar"
 export * from "./Badges"
 export * from "./DevTool"
 export * from "./UserAvatar"

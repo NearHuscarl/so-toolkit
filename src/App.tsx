@@ -1,7 +1,7 @@
 import React from "react"
 import { Provider } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
-import { MyAppBar, DevTool } from "app/widgets"
+import { AppBar, DevTool } from "app/widgets"
 import { store, persistor } from "app/store/store"
 import {
   SeApiServiceProvider,
@@ -22,7 +22,7 @@ export function App() {
               <AxiosProvider>
                 <SeApiServiceProvider>
                   <AuthProvider>
-                    <MyAppBar />
+                    <AppBar />
                     <Router />
                     <DevTool />
                   </AuthProvider>

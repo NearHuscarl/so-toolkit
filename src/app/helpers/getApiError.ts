@@ -1,11 +1,22 @@
 import { AxiosError } from "axios"
 import { ApiResponse } from "app/types"
-import { ApiError } from "./apiError"
+import { AccessTokenError, accessTokenErrorIds, ApiError } from "./apiError"
 
 export function getApiError(e: AxiosError<ApiResponse>) {
-  return new ApiError({
-    id: e.response?.data.error_id,
-    name: e.response?.data.error_name,
-    message: e.response?.data.error_message,
-  })
+  if (!e.response) {
+    return e
+  }
+
+  const { data } = e.response
+  const errorData = {
+    id: data.error_id!,
+    name: data.error_name!,
+    message: data.error_message!,
+  }
+
+  if (accessTokenErrorIds.includes(data.error_id!)) {
+    return new AccessTokenError(errorData)
+  }
+
+  return new ApiError(errorData)
 }

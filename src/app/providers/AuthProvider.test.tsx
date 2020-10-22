@@ -1,17 +1,18 @@
 import React from "react"
 import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
+import { act } from "react-dom/test-utils"
 import { createMockedStore, Roles, user } from "app/test"
 import { useAuth } from "app/hooks"
 import {
   AuthProvider,
   AxiosProvider,
   SeApiServiceProvider,
+  SnackbarProvider,
 } from "app/providers"
 import { getApi } from "app/test/api"
 import { mockAccessToken, users } from "app/test/fixtures"
 import * as oauth from "app/helpers/oauth"
-import { act } from "react-dom/test-utils"
 import { authActions, seApiActions } from "app/store"
 
 describe("<AuthProvider />", () => {
@@ -19,9 +20,11 @@ describe("<AuthProvider />", () => {
     const api = getApi(store)
     const App = (ui) => (
       <Provider store={store}>
-        <AxiosProvider api={api}>
-          <SeApiServiceProvider>{ui}</SeApiServiceProvider>
-        </AxiosProvider>
+        <SnackbarProvider>
+          <AxiosProvider api={api}>
+            <SeApiServiceProvider>{ui}</SeApiServiceProvider>
+          </AxiosProvider>
+        </SnackbarProvider>
       </Provider>
     )
 
@@ -124,6 +127,7 @@ describe("<AuthProvider />", () => {
         accessToken: mockAccessToken,
         me: users.find((u) => u.display_name === "NearHuscarl"),
         expireDate: new Date(Date.now() - 1000).toISOString(),
+        loading: false,
       },
     })
 
@@ -143,8 +147,9 @@ describe("<AuthProvider />", () => {
       `access-tokens/${mockAccessToken}/invalidate`
     )
     expect(api.defaults.params.access_token).toBeUndefined()
-    expect(actions[0]).toStrictEqual(seApiActions.setQuotaRemaining(9977))
-    expect(actions[1]).toStrictEqual(authActions.unauthorize())
+    expect(actions[0]).toStrictEqual(authActions.unauthorizeRequest())
+    expect(actions[1]).toStrictEqual(seApiActions.setQuotaRemaining(9977))
+    expect(actions[2]).toStrictEqual(authActions.unauthorizeSuccess())
   })
 
   it("should invalidate current access token before requesting a new one", async () => {
@@ -155,6 +160,7 @@ describe("<AuthProvider />", () => {
       auth: {
         accessToken: mockAccessToken,
         expireDate: new Date(Date.now() + 1000).toISOString(),
+        loading: false,
       },
     })
 
@@ -187,4 +193,13 @@ describe("<AuthProvider />", () => {
     )
     expect(api.history.get).lastRequestedWith("me")
   })
+
+  it.todo(
+    "should log out when there are errors related to access token"
+    // async () => {
+    // TODO:
+    // https://api.stackexchange.com/docs/error-handling
+    // 401, 402, 403, 406
+    // }
+  )
 })

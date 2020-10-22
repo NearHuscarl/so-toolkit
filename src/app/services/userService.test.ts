@@ -1,10 +1,10 @@
 import { UserService } from "./userService"
 import { createMockedStore, MockOptions } from "app/test"
-import { createUsersMatching } from "app/test/fixtures"
+import { createUsersMatching, mockAccessToken, users } from "app/test/fixtures"
 import { getApi } from "app/test/api"
 
 describe("UserService", () => {
-  let userNear, userJon, allUserNear, allUserJon
+  let userNear, userJon, allUserNear, allUserJon, me
 
   function createMockedUserService(option: MockOptions = {}) {
     const store = createMockedStore()
@@ -19,6 +19,7 @@ describe("UserService", () => {
   }
 
   beforeAll(() => {
+    me = users.find((u) => u.display_name === "NearHuscarl")
     userNear = createUsersMatching("near")
     userJon = createUsersMatching("jon")
     allUserNear = createUsersMatching("near", 8)
@@ -59,6 +60,17 @@ describe("UserService", () => {
     await Promise.all([fetchUsers2(), fetchUsers2(), fetchUsers2()])
     expect(api.history.get).toHaveLength(2)
     expect(api.history.get).lastRequestedWith("users")
+  })
+
+  it("geMe() should throttle properly", async () => {
+    const { api, userService } = createMockedUserService()
+    api.defaults.params.access_token = mockAccessToken
+    const fetchUsers = () =>
+      userService.getMe().then((u) => expect(u).toStrictEqual(me))
+
+    await Promise.all([fetchUsers(), fetchUsers(), fetchUsers()])
+    expect(api.history.get).toHaveLength(1)
+    expect(api.history.get).lastRequestedWith("me")
   })
 
   it("should cache all users found from getUsersByName()", async () => {

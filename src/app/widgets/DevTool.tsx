@@ -14,7 +14,7 @@ function useMockedApi() {
     const { applyApiMock } = require("../test/api")
     return (mock: boolean) => {
       if (mock) {
-        apiMockRef.current = applyApiMock(api, { apiResponseDelay: 400 })
+        apiMockRef.current = applyApiMock(api, { apiResponseDelay: 420 })
       } else {
         apiMockRef.current?.restore()
       }
