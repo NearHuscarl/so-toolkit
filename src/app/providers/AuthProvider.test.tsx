@@ -144,16 +144,16 @@ describe("<AuthProvider />", () => {
     await act(async () => {
       jest.advanceTimersByTime(1)
     })
-
     const actions = store.getActions()
 
     expect(api.history.get).lastRequestedWith(
       `access-tokens/${mockAccessToken}/invalidate`
     )
     expect(api.defaults.params.access_token).toBeUndefined()
-    expect(actions[0]).toStrictEqual(authActions.unauthorizeRequest())
-    expect(actions[1]).toStrictEqual(seApiActions.setQuotaRemaining(9977))
-    expect(actions[2]).toStrictEqual(authActions.unauthorizeSuccess())
+    expect(actions[0]).toStrictEqual(seApiActions.setQuotaRemaining(9977)) // request to check if token is valid
+    expect(actions[1]).toStrictEqual(authActions.unauthorizeRequest())
+    expect(actions[2]).toStrictEqual(seApiActions.setQuotaRemaining(9977))
+    expect(actions[3]).toStrictEqual(authActions.unauthorizeSuccess())
   })
 
   it("should invalidate current access token before requesting a new one", async () => {
@@ -190,9 +190,12 @@ describe("<AuthProvider />", () => {
       jest.advanceTimersByTime(1)
     })
 
-    expect(api.history.get).toHaveLength(2)
+    // 1: check if login                 'access-tokens/my_access_token',
+    // 2: log out by invalidating        'access-tokens/my_access_token/invalidate',
+    // 3: get user info after logging in 'me'
+    expect(api.history.get).toHaveLength(3)
     expect(api.history.get).nthRequestedWith(
-      1,
+      2,
       `access-tokens/${mockAccessToken}/invalidate`
     )
     expect(api.history.get).lastRequestedWith("me")

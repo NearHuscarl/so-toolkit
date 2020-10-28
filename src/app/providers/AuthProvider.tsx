@@ -1,15 +1,15 @@
 import React, { PropsWithChildren, useCallback } from "react"
 import { authActions, useDispatch, useStore } from "app/store"
 import { authenticate } from "app/helpers/oauth"
-import isBefore from "date-fns/isBefore"
+import isAfter from "date-fns/isAfter"
 import { useAxios, useSeApi, useTry } from "app/hooks"
-import { ApiResponse } from "app/types"
+import { AccessTokenResponse, ApiResponse } from "app/types"
 import { accessTokenErrorIds, ApiError } from "app/helpers"
 import { AuthorizeResult } from "app/store/auth.duck"
 
 type Context = {
   accessToken?: string
-  isTokenValid: () => boolean
+  isTokenValid: () => Promise<boolean>
   isLogin: () => boolean
   authorize: () => Promise<AuthorizeResult>
   unauthorize: () => Promise<void>
@@ -91,12 +91,23 @@ function useAuthContext(): Context {
     }
   }, [api.defaults.params, dispatch, isLogin, unauthorize, userService])
 
-  const isTokenValid = useCallback(() => {
-    const { expireDate } = store.getState().auth
-    return Boolean(
-      isLogin() && expireDate && isBefore(Date.now(), Date.parse(expireDate))
+  const isTokenValid = useCallback(async () => {
+    const { expireDate, accessToken } = store.getState().auth
+    const { ...params } = api.defaults.params
+    params.access_token = undefined
+    params.site = undefined // invalidate will throw if pass site params
+    // the access token has no expire date and should never be invalid
+    // unless we explicitly invalidate it when logging out but just in case
+    const response = await api.get<AccessTokenResponse>(
+      `access-tokens/${accessToken}`,
+      { params }
     )
-  }, [isLogin, store])
+    const isValid = !!response.data.items?.some(
+      (at) => at.access_token === accessToken
+    )
+    const isExpired = !expireDate || isAfter(Date.now(), Date.parse(expireDate))
+    return isValid && !isExpired
+  }, [api, store])
 
   return { isTokenValid, authorize, unauthorize, isLogin }
 }
@@ -108,8 +119,12 @@ export function AuthProvider(props: PropsWithChildren<{}>) {
   React.useEffect(() => {
     const { isTokenValid, unauthorize, isLogin } = value
 
-    if (isLogin() && !isTokenValid()) {
-      $try(unauthorize)
+    if (isLogin()) {
+      isTokenValid().then((isValid) => {
+        if (!isValid) {
+          return $try(unauthorize)
+        }
+      })
     }
     // eslint-disable-next-line
   }, [])
