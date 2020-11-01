@@ -1,3 +1,3 @@
-export * from "./userService"
-export * from "./pplReachedService"
-export * from "./authService"
+export * from "app/services/UserService"
+export * from "app/services/PplReachedService"
+export * from "app/services/AuthService"

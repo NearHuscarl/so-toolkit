@@ -1,5 +1,5 @@
 import axios from "axios"
-import { ServiceBase } from "app/services/serviceBase"
+import { ServiceBase } from "app/services/ServiceBase"
 import { ApiError, authenticate } from "app/helpers"
 import { SEDE_AUTH_URL } from "app/constants"
 import { AppStore } from "app/store"

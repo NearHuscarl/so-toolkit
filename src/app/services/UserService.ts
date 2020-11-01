@@ -5,7 +5,7 @@ import Debug from "debug"
 import { User, UserParams, UserResponse } from "app/types"
 import { AppStore, userActions } from "app/store"
 import { ApiCache } from "app/helpers"
-import { ServiceBase, ServiceProps } from "./serviceBase"
+import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
 
 const debug = Debug("app:cache")
 

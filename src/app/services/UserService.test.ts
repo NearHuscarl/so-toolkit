@@ -1,4 +1,4 @@
-import { UserService } from "./userService"
+import { UserService } from "app/services/UserService"
 import { createMockedStore, MockOptions } from "app/test"
 import { createUsersMatching, mockAccessToken, users } from "app/test/fixtures"
 import { getApi } from "app/test/api"

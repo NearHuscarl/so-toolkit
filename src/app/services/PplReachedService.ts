@@ -5,7 +5,7 @@ import { PeopleReached } from "app/types"
 import { userActions } from "app/store"
 import { ApiCache } from "app/helpers"
 import LRUCache, { Entry } from "lru-cache"
-import { ServiceBase, ServiceProps } from "app/services/serviceBase"
+import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
 import { SEDE_AUTH_URL } from "app/constants"
 
 const debug = Debug("app:cache")

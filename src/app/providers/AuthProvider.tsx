@@ -67,7 +67,7 @@ function useAuthContext(): Context {
     }
 
     const { accessToken } = await authService.authorize()
-    api.defaults.params.access_token = accessToken
+    api.defaults.params.access_token = accessToken // TODO: I can do better than this
     const user = await userService.getMe()
     return { user, accessToken }
   }, [api.defaults.params, authService, isLogin, unauthorize, userService])
