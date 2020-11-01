@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios"
+import axios, { AxiosInstance, AxiosResponse } from "axios"
 import { AppStore, seApiActions } from "app/store"
 import Debug from "debug"
 import { SE_API_URL } from "app/constants"
@@ -6,15 +6,7 @@ import { ApiResponse } from "app/types"
 
 const debugApi = Debug("app:api")
 
-export function createApi(store: AppStore) {
-  const api = axios.create({
-    baseURL: SE_API_URL,
-    params: {
-      site: "stackoverflow",
-      key: process.env.REACT_APP_STACK_APP_KEY,
-    },
-  })
-
+export function interceptResponse(api: AxiosInstance, store: AppStore) {
   api.interceptors.response.use(
     (response: AxiosResponse<ApiResponse>) => {
       const { quota_remaining = 10_000 } = response.data
@@ -22,16 +14,10 @@ export function createApi(store: AppStore) {
 
       let message = "quotas: %c" + oldQuotaRemaining
       const css = ["color: limegreen;"]
-      const { inname } = response.config.params
 
       message += "%c → %c" + quota_remaining
       css.push("color: white")
       css.push("color: #75BFFF")
-
-      if (inname) {
-        message += " %c" + inname
-        css.push("color: crimson")
-      }
 
       debugApi(message, ...css)
       store.dispatch(seApiActions.setQuotaRemaining(quota_remaining))
@@ -44,4 +30,16 @@ export function createApi(store: AppStore) {
   )
 
   return api
+}
+
+export function createApi(store: AppStore) {
+  const api = axios.create({
+    baseURL: SE_API_URL,
+    params: {
+      site: "stackoverflow",
+      key: process.env.REACT_APP_STACK_APP_KEY,
+    },
+  })
+
+  return interceptResponse(api, store)
 }

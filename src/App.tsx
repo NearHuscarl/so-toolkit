@@ -22,9 +22,7 @@ export function App() {
               <AxiosProvider>
                 <SeApiServiceProvider>
                   <AuthProvider>
-                    <AppBar />
                     <Router />
-                    <DevTool />
                   </AuthProvider>
                 </SeApiServiceProvider>
               </AxiosProvider>

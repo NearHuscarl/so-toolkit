@@ -131,7 +131,6 @@ describe("<AuthProvider />", () => {
         accessToken: mockAccessToken,
         me: users.find((u) => u.display_name === "NearHuscarl"),
         expireDate: new Date(Date.now() - 1000).toISOString(),
-        loading: false,
       },
     })
 
@@ -151,9 +150,8 @@ describe("<AuthProvider />", () => {
     )
     expect(api.defaults.params.access_token).toBeUndefined()
     expect(actions[0]).toStrictEqual(seApiActions.setQuotaRemaining(9977)) // request to check if token is valid
-    expect(actions[1]).toStrictEqual(authActions.unauthorizeRequest())
-    expect(actions[2]).toStrictEqual(seApiActions.setQuotaRemaining(9977))
-    expect(actions[3]).toStrictEqual(authActions.unauthorizeSuccess())
+    expect(actions[1]).toStrictEqual(seApiActions.setQuotaRemaining(9977)) // request to invalidate
+    expect(actions[2]).toStrictEqual(authActions.unauthorizeSuccess())
   })
 
   it("should invalidate current access token before requesting a new one", async () => {
@@ -164,7 +162,6 @@ describe("<AuthProvider />", () => {
       auth: {
         accessToken: mockAccessToken,
         expireDate: new Date(Date.now() + 1000).toISOString(),
-        loading: false,
       },
     })
 

@@ -6,7 +6,7 @@ import { SeApiServiceProvider } from "./SeApiServiceProvider"
 import { useSeApi } from "app/hooks"
 import { AxiosProvider } from "app/providers"
 import { getApi } from "app/test/api"
-import { UserService } from "app/services"
+import { AuthService, PplReachedService, UserService } from "app/services"
 
 describe("<SeApiServiceProvider />", () => {
   it("should throw if not wrapped inside <Provider/> and <AxiosProvider/>", () => {
@@ -28,18 +28,25 @@ describe("<SeApiServiceProvider />", () => {
   it("should provide the API to children", () => {
     const store = createMockedStore()
     const api = getApi(store)
-    const userService = new UserService({ api, store })
+    const props = { api, store }
+    const userService = new UserService(props)
+    const authService = new AuthService(props)
+    const pplReachedService = new PplReachedService(props)
 
     function Test() {
       const api = useSeApi()
       expect(api.userService).toBe(userService)
+      expect(api.pplReachedService).toBe(pplReachedService)
+      expect(api.authService).toBe(authService)
       return <span data-testid="me">abc</span>
     }
 
     render(
       <Provider store={store}>
         <AxiosProvider api={api}>
-          <SeApiServiceProvider service={{ userService }}>
+          <SeApiServiceProvider
+            service={{ userService, pplReachedService, authService }}
+          >
             <Test />
           </SeApiServiceProvider>
         </AxiosProvider>

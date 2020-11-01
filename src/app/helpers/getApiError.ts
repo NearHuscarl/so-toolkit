@@ -14,20 +14,24 @@ function isApiError(e: any): e is ApiError {
 }
 
 export function getApiError(e: AxiosError<ApiResponse>) {
-  if (!e.response || !isApiError(e.response.data)) {
+  if (!e.response) {
     return e
   }
 
-  const { data } = e.response
-  const errorData = {
-    id: data.error_id!,
-    name: data.error_name!,
-    message: data.error_message!,
+  if (isApiError(e.response.data)) {
+    const { data } = e.response
+    const errorData = {
+      id: data.error_id!,
+      name: data.error_name!,
+      message: data.error_message!,
+    }
+
+    if (accessTokenErrorIds.includes(data.error_id!)) {
+      return new AccessTokenError(errorData)
+    }
+
+    return new ApiError(errorData)
   }
 
-  if (accessTokenErrorIds.includes(data.error_id!)) {
-    return new AccessTokenError(errorData)
-  }
-
-  return new ApiError(errorData)
+  return e
 }

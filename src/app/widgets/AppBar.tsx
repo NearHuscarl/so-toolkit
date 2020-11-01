@@ -5,13 +5,12 @@ import {
   IconButton,
   Typography,
   Button,
-  LinearProgress,
 } from "@material-ui/core"
 import MenuIcon from "@material-ui/icons/Menu"
 import { makeStyles } from "app/styles"
 import { createStyles } from "@material-ui/styles"
 import { AuthButton } from "app/widgets"
-import { useSelector } from "app/store"
+import { useLocation } from "react-router-dom"
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -29,30 +28,24 @@ const useStyles = makeStyles((theme) =>
 
 export function AppBar() {
   const classes = useStyles()
-  const isLoading = useSelector((state) => state.auth.loading)
+  const location = useLocation()
 
   return (
-    <>
-      <MuiAppBar position="static">
-        <Toolbar>
-          {/*<IconButton*/}
-          {/*  edge="start"*/}
-          {/*  className={classes.menuButton}*/}
-          {/*  color="inherit"*/}
-          {/*  aria-label="menu"*/}
-          {/*>*/}
-          {/*  <MenuIcon />*/}
-          {/*</IconButton>*/}
-          <Typography variant="h6" className={classes.title}>
-            SO Toolkit
-          </Typography>
-          <AuthButton />
-        </Toolbar>
-      </MuiAppBar>
-      <LinearProgress
-        color="secondary"
-        style={{ opacity: isLoading ? 1 : 0 }}
-      />
-    </>
+    <MuiAppBar position="static">
+      <Toolbar>
+        {/*<IconButton*/}
+        {/*  edge="start"*/}
+        {/*  className={classes.menuButton}*/}
+        {/*  color="inherit"*/}
+        {/*  aria-label="menu"*/}
+        {/*>*/}
+        {/*  <MenuIcon />*/}
+        {/*</IconButton>*/}
+        <Typography variant="h6" className={classes.title}>
+          SO Toolkit
+        </Typography>
+        {location.pathname !== "/login" && <AuthButton />}
+      </Toolbar>
+    </MuiAppBar>
   )
 }

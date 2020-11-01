@@ -56,16 +56,8 @@ export function _authenticate(option: AuthenticationOption) {
       return reject(new Error("This script requires popups to be enabled."))
     }
 
-    popup.addEventListener("DOMContentLoaded", function () {
-      const queryString = popup.location.hash.replace(/^#/, "")
-      const { access_token: accessToken, expires } = serializeSearchParams(
-        new URLSearchParams(queryString)
-      ) as any
-      const expireDate = new Date(new Date().getTime() + expires * 1000)
-
-      popup.close()
-      resolve({ accessToken, expireDate })
-    })
+    // @ts-ignore
+    window.resolveOauthPopup = (result) => resolve(result)
   })
 }
 

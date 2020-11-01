@@ -1,20 +1,18 @@
 import { AxiosInstance } from "axios"
+import LRUCache, { Entry } from "lru-cache"
 import memoize from "lodash/memoize"
 import Debug from "debug"
 import { User, UserParams, UserResponse } from "app/types"
 import { AppStore, userActions } from "app/store"
 import { ApiCache } from "app/helpers"
-import LRUCache, { Entry } from "lru-cache"
+import { ServiceBase, ServiceProps } from "./serviceBase"
 
 const debug = Debug("app:cache")
 
-type Props = { store: AppStore; api: AxiosInstance }
-
-export class UserService {
+export class UserService extends ServiceBase {
   static USER_CACHE_MAX_AGE = 1000 * 60 * 30
   static USER_SEARCH_CACHE_MAX_AGE = 1000 * 60 * 60 * 24
 
-  API: AxiosInstance
   getUser: (userId: number) => Promise<User>
   getUserIdsByName: (name: string, options: UserParams) => Promise<number[]>
   getMe: () => Promise<User>
@@ -65,8 +63,9 @@ export class UserService {
     return this.userSearchCache
   }
 
-  constructor(props: Props) {
-    const { store, api } = props
+  constructor(props: ServiceProps) {
+    super(props)
+    const { store } = props
     const { user } = store.getState()
     const userCache = this._setUserCache(user.cache, (cache) =>
       store.dispatch(userActions.setUserCache(cache.dump()))
@@ -76,7 +75,6 @@ export class UserService {
       (cache) => store.dispatch(userActions.setUserSearchCache(cache.dump()))
     )
 
-    this.API = api
     this.getUser = this._memoizeApi(this._getUserRaw, userCache)
     this.getMe = this._memoizeApi(this._getMeRaw, userCache)
     this.getUserIdsByName = this._memoizeApi(

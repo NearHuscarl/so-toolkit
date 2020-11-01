@@ -4,6 +4,7 @@ import { useAuth, useTry } from "app/hooks"
 import { useSelector } from "app/store"
 import { UserAvatar } from "app/widgets/UserAvatar"
 import { makeStyles } from "app/styles"
+import { useHistory } from "react-router-dom"
 
 const useProfileStyles = makeStyles({
   root: {
@@ -14,19 +15,18 @@ const useProfileStyles = makeStyles({
 function UserProfile() {
   const classes = useProfileStyles()
   const me = useSelector((state) => state.auth.me)
-  const isLoading = useSelector((state) => state.auth.loading)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { unauthorize } = useAuth()
-  const $try = useTry()
+  const { $try: tryUnauthorize, isPending } = useTry(unauthorize)
   const onOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
   const onClose = () => {
     setAnchorEl(null)
   }
-  const onLogout = () => {
+  const onLogout = async () => {
     onClose()
-    $try(unauthorize)
+    await tryUnauthorize()
   }
 
   return (
@@ -48,7 +48,7 @@ function UserProfile() {
         }}
       >
         {/*<MenuItem onClick={handleClose}>Profile</MenuItem>*/}
-        <MenuItem disabled={isLoading} onClick={onLogout}>
+        <MenuItem disabled={isPending} onClick={onLogout}>
           Logout
         </MenuItem>
       </Menu>
@@ -62,18 +62,12 @@ function UserProfile() {
  * is logged in
  */
 export function AuthButton() {
-  const { authorize } = useAuth()
   const isLogin = useSelector((state) => Boolean(state.auth.me))
-  const isLoading = useSelector((state) => state.auth.loading)
-  const $try = useTry()
+  const history = useHistory()
 
   if (!isLogin) {
     return (
-      <Button
-        disabled={isLoading}
-        color="secondary"
-        onClick={() => $try(authorize)}
-      >
+      <Button color="secondary" onClick={() => history.push("/login")}>
         Login
       </Button>
     )

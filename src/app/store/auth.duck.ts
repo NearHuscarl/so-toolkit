@@ -6,50 +6,38 @@ import { User } from "app/types"
 import { OAUTH_DURATION } from "app/constants"
 
 export interface AuthState {
-  loading: boolean
   me?: User
   accessToken?: string
+  // I have no choice: https://meta.stackexchange.com/a/341993/860277
+  authCookie?: string
   expireDate?: string
 }
 
-export type AuthorizeResult = {
+export type AuthResult = {
   user: User
+  authCookie: string
   accessToken: string
 }
 
-export const initialState: AuthState = {
-  loading: false,
-}
+export const initialState: AuthState = {}
 
 const slice = createSlice({
   initialState,
   name: "auth",
   reducers: {
-    authorizeRequest(state) {
-      state.loading = true
-    },
-    authorizeSuccess(state, action: PayloadAction<AuthorizeResult>) {
-      const { user, accessToken } = action.payload
+    authorizeSuccess(state, action: PayloadAction<AuthResult>) {
+      const { user, accessToken, authCookie } = action.payload
 
       state.me = user
       state.accessToken = accessToken
+      state.authCookie = ".ASPXAUTH=" + authCookie
       state.expireDate = add(Date.now(), OAUTH_DURATION).toISOString()
-      state.loading = false
-    },
-    authorizeFailure(state) {
-      state.loading = false
-    },
-    unauthorizeRequest(state) {
-      state.loading = true
     },
     unauthorizeSuccess(state) {
       state.me = undefined
       state.accessToken = undefined
       state.expireDate = undefined
-      state.loading = false
-    },
-    unauthorizeFailure(state) {
-      state.loading = false
+      state.authCookie = undefined
     },
     // for debugging
     _setExpireDate(state, action: PayloadAction<string>) {
@@ -61,7 +49,6 @@ const slice = createSlice({
 const persistConfig: PersistConfig<AuthState> = {
   storage,
   key: "auth",
-  blacklist: ["loading"],
 }
 
 export const { actions } = slice

@@ -5,8 +5,6 @@ describe("<AuthButton />", () => {
 
   it.todo("should show avatar and logout button if user is logged in")
 
-  it.todo("should disable button when logged in")
-
   // TODO: put the user menu into to separate component
   it.todo("should disable button when logged out")
 })

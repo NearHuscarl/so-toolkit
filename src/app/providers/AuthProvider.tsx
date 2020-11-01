@@ -1,12 +1,14 @@
 import React, { PropsWithChildren, useCallback } from "react"
 import { authActions, useDispatch, useStore } from "app/store"
-import { authenticate } from "app/helpers/oauth"
 import isAfter from "date-fns/isAfter"
 import { useAxios, useSeApi, useTry } from "app/hooks"
-import { AccessTokenResponse, ApiResponse } from "app/types"
+import { AccessTokenResponse, ApiResponse, User } from "app/types"
 import { accessTokenErrorIds, ApiError } from "app/helpers"
-import { AuthorizeResult } from "app/store/auth.duck"
 
+type AuthorizeResult = {
+  user: User
+  accessToken: string
+}
 type Context = {
   accessToken?: string
   isTokenValid: () => Promise<boolean>
@@ -21,7 +23,7 @@ export const AuthContext = React.createContext<Context>(EMPTY_AUTH_CONTEXT)
 function useAuthContext(): Context {
   const dispatch = useDispatch()
   const api = useAxios()
-  const { userService } = useSeApi()
+  const { userService, authService } = useSeApi()
   const store = useStore()
   const isLogin = useCallback(
     () => Boolean(store.getState().auth.accessToken),
@@ -30,7 +32,6 @@ function useAuthContext(): Context {
 
   const unauthorize = useCallback(async () => {
     try {
-      dispatch(authActions.unauthorizeRequest())
       const { accessToken } = store.getState().auth
 
       if (!accessToken) return
@@ -55,41 +56,21 @@ function useAuthContext(): Context {
     } catch (e) {
       if (accessTokenErrorIds.includes(e?.response?.data?.error_id)) {
         dispatch(authActions.unauthorizeSuccess()) // clean up access token
-      } else {
-        dispatch(authActions.unauthorizeFailure())
       }
       return Promise.reject(e)
     }
   }, [api, dispatch, store])
 
   const authorize = useCallback(async () => {
-    try {
-      dispatch(authActions.authorizeRequest())
-
-      if (isLogin()) {
-        await unauthorize() // invalidate current access token before requesting a new one
-      }
-
-      const { accessToken } = await authenticate({
-        redirectUri: window.location.origin + "/login/success",
-        clientId: Number(process.env.REACT_APP_STACK_APP_CLIENT_ID!),
-        // default expire interval is too short and can't be changed
-        // https://stackapps.com/a/6720/72145
-        // TODO: uncomment after doing more testing to make sure nothing goes wrong
-        // scope: ["no_expiry"],
-      })
-
-      api.defaults.params.access_token = accessToken
-      const user = await userService.getMe()
-      const result = { user, accessToken }
-      dispatch(authActions.authorizeSuccess(result))
-
-      return result
-    } catch (e) {
-      dispatch(authActions.authorizeFailure())
-      return Promise.reject(e)
+    if (isLogin()) {
+      await unauthorize() // invalidate current access token before requesting a new one
     }
-  }, [api.defaults.params, dispatch, isLogin, unauthorize, userService])
+
+    const { accessToken } = await authService.authorize()
+    api.defaults.params.access_token = accessToken
+    const user = await userService.getMe()
+    return { user, accessToken }
+  }, [api.defaults.params, authService, isLogin, unauthorize, userService])
 
   const isTokenValid = useCallback(async () => {
     const { expireDate, accessToken } = store.getState().auth
@@ -114,15 +95,14 @@ function useAuthContext(): Context {
 
 export function AuthProvider(props: PropsWithChildren<{}>) {
   const [value] = React.useState<Context>(useAuthContext())
-  const $try = useTry()
+  const { isTokenValid, unauthorize, isLogin } = value
+  const { $try: tryUnauthorize } = useTry(unauthorize)
 
   React.useEffect(() => {
-    const { isTokenValid, unauthorize, isLogin } = value
-
     if (isLogin()) {
       isTokenValid().then((isValid) => {
         if (!isValid) {
-          return $try(unauthorize)
+          return tryUnauthorize()
         }
       })
     }
