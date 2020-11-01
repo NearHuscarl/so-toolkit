@@ -3,6 +3,7 @@ import { BrowserRouter, Switch, Route } from "react-router-dom"
 import { ReputationPage, LoginPage, LoginSuccessPage } from "app/pages"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { AppBar, DevTool } from "app/widgets"
+import { AuthRoute } from "./AuthRoute"
 
 export function Router() {
   return (
@@ -13,12 +14,12 @@ export function Router() {
         <ProtectedRoute path="/" exact>
           <ReputationPage />
         </ProtectedRoute>
-        <Route path="/login" exact>
+        <AuthRoute path="/login" exact>
           <LoginPage />
-        </Route>
-        <Route path="/login/success">
+        </AuthRoute>
+        <AuthRoute path="/login/success">
           <LoginSuccessPage />
-        </Route>
+        </AuthRoute>
         <Route path="/about">about</Route>
       </Switch>
     </BrowserRouter>

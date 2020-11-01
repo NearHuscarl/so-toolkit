@@ -7,11 +7,12 @@ import {
   ThemeProvider,
 } from "app/providers"
 import { Provider } from "react-redux"
-import { createMockedStore } from "app/test/index"
+import { createMockedStore, InitialMockState } from "app/test/index"
 import { getApi } from "app/test/api"
 
 export type MockOptions = {
   apiResponseDelay?: number
+  initialState?: InitialMockState
 }
 type AllRenderOptions = MockOptions & Omit<RenderOptions, "queries">
 
@@ -19,8 +20,8 @@ export function renderApp(
   ui: React.ReactElement,
   options: AllRenderOptions = {}
 ) {
-  const { apiResponseDelay = 0, ...opts } = options
-  const store = createMockedStore()
+  const { apiResponseDelay = 0, initialState, ...opts } = options
+  const store = createMockedStore(initialState)
   const api = getApi(store, { apiResponseDelay })
 
   const App = (comp) => (

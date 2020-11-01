@@ -6,10 +6,10 @@ type RemovePersist<StoreState> = {
   [P in keyof StoreState]: Omit<StoreState[P], "_persist">
 }
 type MockState = RemovePersist<RootState>
-
+export type InitialMockState = Partial<MockState>
 export type MockedStore = ReturnType<typeof createMockedStore>
 
-export function createMockedStore(state: Partial<MockState> = {}) {
+export function createMockedStore(state: InitialMockState = {}) {
   const mockStore = configureStore<RootState>()
   const initialState: MockState = {
     user: userInitialState,
