@@ -1,10 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios"
 import { AppStore, seApiActions } from "app/store"
-import Debug from "debug"
 import { SE_API_URL } from "app/constants"
 import { ApiResponse } from "app/types"
-
-const debugApi = Debug("app:api")
+import { debug } from "app/helpers/debug"
 
 export function interceptResponse(api: AxiosInstance, store: AppStore) {
   api.interceptors.response.use(
@@ -19,7 +17,7 @@ export function interceptResponse(api: AxiosInstance, store: AppStore) {
       css.push("color: white")
       css.push("color: #75BFFF")
 
-      debugApi(message, ...css)
+      debug.api(message, ...css)
       store.dispatch(seApiActions.setQuotaRemaining(quota_remaining))
 
       return response

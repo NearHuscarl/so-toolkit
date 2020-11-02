@@ -1,14 +1,11 @@
 import axios from "axios"
 import memoize from "lodash/memoize"
-import Debug from "debug"
 import { PeopleReached } from "app/types"
 import { userActions } from "app/store"
-import { ApiCache } from "app/helpers"
+import { ApiCache, debug } from "app/helpers"
 import LRUCache, { Entry } from "lru-cache"
 import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
 import { SEDE_AUTH_URL } from "app/constants"
-
-const debug = Debug("app:cache")
 
 export class PplReachedService extends ServiceBase {
   // TODO: add firebase cache
@@ -26,7 +23,7 @@ export class PplReachedService extends ServiceBase {
       cache: initialCache,
       max: 120,
       maxAge: PplReachedService.CACHE_MAX_AGE,
-      onGet: () => debug("cache hit"),
+      onGet: () => debug.cache("cache hit"),
       onSet: (k, v, cache) => setCacheAction(cache),
     })
 

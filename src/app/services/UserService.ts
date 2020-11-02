@@ -1,13 +1,10 @@
 import { AxiosInstance } from "axios"
 import LRUCache, { Entry } from "lru-cache"
 import memoize from "lodash/memoize"
-import Debug from "debug"
 import { User, UserParams, UserResponse } from "app/types"
 import { AppStore, userActions } from "app/store"
-import { ApiCache } from "app/helpers"
+import { ApiCache, debug } from "app/helpers"
 import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
-
-const debug = Debug("app:cache")
 
 export class UserService extends ServiceBase {
   static USER_CACHE_MAX_AGE = 1000 * 60 * 30
@@ -26,7 +23,7 @@ export class UserService extends ServiceBase {
       cache: initialCache,
       max: 60,
       maxAge: UserService.USER_CACHE_MAX_AGE,
-      onGet: () => debug("cache hit"),
+      onGet: () => debug.cache("cache hit"),
       onSet: (k, v, cache) => setCacheAction(cache),
     })
 
@@ -56,7 +53,7 @@ export class UserService extends ServiceBase {
         })
         return userIds?.every((id) => cache.has(id)) || false
       },
-      onGet: () => debug("cache hit"),
+      onGet: () => debug.cache("cache hit"),
       onSet: (k, v, cache) => setCacheAction(cache),
     })
 
