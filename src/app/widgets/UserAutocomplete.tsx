@@ -1,14 +1,12 @@
 import React from "react"
 import throttle from "lodash/throttle"
-import { AxiosError } from "axios"
 import { CircularProgress, TextField, Tooltip, Grid } from "@material-ui/core"
 import { Autocomplete } from "@material-ui/lab"
-import { ApiResponse, User } from "app/types"
+import { User } from "app/types"
 import { __DEV__ } from "app/constants"
 import { Badges, Highlighter, UserAvatar } from "app/widgets"
 import { makeStyles } from "app/styles"
-import { useIsMounted, useSeApi, useSnackbar } from "app/hooks"
-import { getApiError } from "app/helpers"
+import { useIsMounted, useSeApi, useTry } from "app/hooks"
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -70,47 +68,39 @@ type UserAutocompleteProps = {
   onChange?: (u: User) => void
 }
 
-export const DEBOUNCED_TIME = 350
+export const DEBOUNCED_TIME = 550
 
 export function UserAutocomplete(props: UserAutocompleteProps) {
   const { userService } = useSeApi()
-  const { createErrorSnackbar } = useSnackbar()
   const classes = useStyles()
   const [value, setValue] = React.useState<User | null>(null)
-  const [loading, setLoading] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
   const [options, setOptions] = React.useState<User[]>([])
   const isMounted = useIsMounted()
+  const getUsers = React.useCallback(
+    (input: string) => userService.getUsersByName(input, { pagesize: 5 }),
+    [userService]
+  )
+  const { $try: tryGetUsers, isPending, data } = useTry(getUsers)
 
   const fetch = React.useMemo(
     () =>
       throttle(
-        (
-          input: string,
-          success: (users: User[]) => void,
-          failure: (e: AxiosError<ApiResponse>) => void
-        ) => {
+        (input: string) => {
           if (!isMounted() || input.length <= 1) return
 
-          setLoading(true)
-
-          return userService
-            ?.getUsersByName(input, { pagesize: 5 })
-            .then(success)
-            .catch(failure)
+          return tryGetUsers(input)
         },
         DEBOUNCED_TIME,
         { leading: false }
       ),
-    [isMounted, userService]
+    [isMounted, tryGetUsers]
   )
 
   React.useEffect(() => {
-    let isStale = false
-
     if (inputValue === "") {
       setOptions(value ? [value] : [])
-      return undefined
+      return
     }
 
     // user selects the option which is already in the cache
@@ -118,34 +108,22 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
       return
     }
 
-    fetch(
-      inputValue,
-      (results) => {
-        if (isStale) {
-          return
-        }
+    fetch(inputValue)
+  }, [fetch, inputValue, value])
 
-        setLoading(false)
-        let newOptions = [] as User[]
+  React.useEffect(() => {
+    let newOptions = [] as User[]
 
-        if (value) {
-          newOptions = [value]
-        }
+    if (value) {
+      newOptions = [value]
+    }
 
-        if (results) {
-          newOptions = [...newOptions, ...results]
-        }
+    if (data) {
+      newOptions = [...newOptions, ...data]
+    }
 
-        setOptions(newOptions)
-      },
-      (e) => {
-        setLoading(false)
-        createErrorSnackbar(getApiError(e).message)
-      }
-    )
-
-    return () => void (isStale = true)
-  }, [value, inputValue, fetch, createErrorSnackbar])
+    setOptions(newOptions)
+  }, [data, value])
 
   return (
     <Autocomplete
@@ -160,17 +138,16 @@ export function UserAutocomplete(props: UserAutocompleteProps) {
       options={options}
       autoComplete
       clearOnBlur={false}
-      loading={loading}
+      loading={isPending}
       includeInputInList
       loadingText={getLoadingNode()}
       filterSelectedOptions
       value={value}
       fullWidth
       onChange={(event: any, newValue: User | null) => {
-        setOptions(newValue ? [newValue, ...options] : options)
         setValue(newValue)
-        if (newValue && props.onChange) {
-          props?.onChange(newValue)
+        if (newValue) {
+          props.onChange?.(newValue)
         }
       }}
       onInputChange={(event, newInputValue) => {

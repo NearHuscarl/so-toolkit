@@ -1,8 +1,14 @@
 import React from "react"
 import { Profile, UserAutocomplete } from "app/widgets"
-import { Box, Card, CardContent, Typography } from "@material-ui/core"
-import { PeopleReached, User } from "app/types"
-import { useSeApi } from "app/hooks"
+import {
+  Box,
+  Card,
+  CardContent,
+  LinearProgress,
+  Typography,
+} from "@material-ui/core"
+import { User } from "app/types"
+import { useSeApi, useTry } from "app/hooks"
 
 function printObject(value: any) {
   if (typeof value === "string") {
@@ -12,14 +18,10 @@ function printObject(value: any) {
 }
 
 export function ReputationPage() {
-  const [result, setResult] = React.useState<PeopleReached | string>(
-    "No user found"
-  )
   const { pplReachedService } = useSeApi()
-  const onChangeUser = (user: User) => {
-    pplReachedService.get(user.user_id).then((data) => {
-      setResult(data)
-    })
+  const { $try, data, isPending } = useTry(pplReachedService.get)
+  const onChangeUser = async (user: User) => {
+    await $try(user.user_id)
   }
 
   return (
@@ -28,8 +30,11 @@ export function ReputationPage() {
         <UserAutocomplete onChange={onChangeUser} />
         <Card>
           <CardContent>
-            <Typography variant="h5">User</Typography>
-            <pre style={{ whiteSpace: "pre-wrap" }}>{printObject(result)}</pre>
+            <Box display="flex" flexDirection="column" gridRowGap={10}>
+              <Typography variant="h5">User</Typography>
+              {isPending && <LinearProgress />}
+            </Box>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{printObject(data)}</pre>
           </CardContent>
           {/*<Profile />*/}
         </Card>
