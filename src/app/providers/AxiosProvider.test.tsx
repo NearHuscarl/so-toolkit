@@ -5,7 +5,8 @@ import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
 import { AxiosProvider } from "app/providers/AxiosProvider"
 import { mockAccessToken } from "app/test/fixtures"
-import { getApi } from "app/test/api"
+import { createMockApi } from "app/test/api"
+import { createSeApi } from "app/helpers"
 
 describe("<AxiosProvider />", () => {
   it("should provide the API to children", () => {
@@ -13,7 +14,8 @@ describe("<AxiosProvider />", () => {
 
     function Test() {
       const api = useAxios()
-      expect(api).toBeAxiosInstance()
+      expect(api.getSe()).toBeAxiosInstance()
+      expect(api.getSede()).toBeAxiosInstance()
       return <div />
     }
 
@@ -32,21 +34,21 @@ describe("<AxiosProvider />", () => {
         accessToken: mockAccessToken,
       },
     })
-    const api = getApi()
+    const api = createMockApi(createSeApi(store))
 
     expect(api.defaults.params.access_token).toBeUndefined()
 
     function Test() {
-      const api = useAxios()
+      const { getSe } = useAxios()
       const onClick = () => {
-        expect(api.defaults.params.access_token).toBe(mockAccessToken)
+        expect(getSe().defaults.params.access_token).toBe(mockAccessToken)
       }
       return <button onClick={onClick}>click</button>
     }
 
     render(
       <Provider store={store}>
-        <AxiosProvider api={api}>
+        <AxiosProvider se={api}>
           <Test />
         </AxiosProvider>
       </Provider>

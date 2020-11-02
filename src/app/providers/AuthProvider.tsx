@@ -1,9 +1,9 @@
 import React, { PropsWithChildren, useCallback } from "react"
 import { authActions, useDispatch, useStore } from "app/store"
-import isAfter from "date-fns/isAfter"
 import { useAxios, useSeApi, useTry } from "app/hooks"
-import { AccessTokenResponse, ApiResponse, User } from "app/types"
-import { accessTokenErrorIds, ApiError } from "app/helpers"
+import { User } from "app/types"
+import { accessTokenErrorIds } from "app/helpers"
+import { AuthResult } from "app/store/auth.duck"
 
 type AuthorizeResult = {
   user: User
@@ -15,6 +15,7 @@ type Context = {
   isLogin: () => boolean
   authorize: () => Promise<AuthorizeResult>
   unauthorize: () => Promise<void>
+  login: (loginData: AuthResult) => void
 }
 
 export const EMPTY_AUTH_CONTEXT = Object.freeze({} as any)
@@ -22,9 +23,9 @@ export const AuthContext = React.createContext<Context>(EMPTY_AUTH_CONTEXT)
 
 function useAuthContext(): Context {
   const dispatch = useDispatch()
-  const api = useAxios()
   const { userService, authService } = useSeApi()
   const store = useStore()
+  const axios = useAxios()
   const isLogin = useCallback(
     () => Boolean(store.getState().auth.accessToken),
     [store]
@@ -34,24 +35,7 @@ function useAuthContext(): Context {
     try {
       const { accessToken } = store.getState().auth
 
-      if (!accessToken) return
-
-      const { ...params } = api.defaults.params
-      params.site = undefined // invalidate will throw if pass site params
-      const response = await api.get<ApiResponse>(
-        `access-tokens/${accessToken}/invalidate`,
-        { params }
-      )
-
-      if (response.data.items?.length === 0) {
-        throw new ApiError({
-          id: -1,
-          name: "Access token is either not available or already expired",
-          message: "Logout failed",
-        })
-      }
-
-      api.defaults.params.access_token = undefined
+      await authService.unauthorize(accessToken)
       dispatch(authActions.unauthorizeSuccess())
     } catch (e) {
       if (accessTokenErrorIds.includes(e?.response?.data?.error_id)) {
@@ -59,7 +43,7 @@ function useAuthContext(): Context {
       }
       return Promise.reject(e)
     }
-  }, [api, dispatch, store])
+  }, [authService, dispatch, store])
 
   const authorize = useCallback(async () => {
     if (isLogin()) {
@@ -67,30 +51,26 @@ function useAuthContext(): Context {
     }
 
     const { accessToken } = await authService.authorize()
-    api.defaults.params.access_token = accessToken // TODO: I can do better than this
     const user = await userService.getMe()
     return { user, accessToken }
-  }, [api.defaults.params, authService, isLogin, unauthorize, userService])
+  }, [authService, isLogin, unauthorize, userService])
+
+  const login = useCallback(
+    (loginData: AuthResult) => {
+      axios.getSede().defaults.headers = {
+        "auth-cookie": loginData.authCookie,
+      }
+      dispatch(authActions.authorizeSuccess(loginData))
+    },
+    [axios, dispatch]
+  )
 
   const isTokenValid = useCallback(async () => {
     const { expireDate, accessToken } = store.getState().auth
-    const { ...params } = api.defaults.params
-    params.access_token = undefined
-    params.site = undefined // invalidate will throw if pass site params
-    // the access token has no expire date and should never be invalid
-    // unless we explicitly invalidate it when logging out but just in case
-    const response = await api.get<AccessTokenResponse>(
-      `access-tokens/${accessToken}`,
-      { params }
-    )
-    const isValid = !!response.data.items?.some(
-      (at) => at.access_token === accessToken
-    )
-    const isExpired = !expireDate || isAfter(Date.now(), Date.parse(expireDate))
-    return isValid && !isExpired
-  }, [api, store])
+    return authService.isTokenValid(accessToken, expireDate)
+  }, [authService, store])
 
-  return { isTokenValid, authorize, unauthorize, isLogin }
+  return { isTokenValid, authorize, unauthorize, isLogin, login }
 }
 
 export function AuthProvider(props: PropsWithChildren<{}>) {

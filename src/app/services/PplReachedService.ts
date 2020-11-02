@@ -1,11 +1,9 @@
-import axios from "axios"
 import memoize from "lodash/memoize"
 import { PeopleReached } from "app/types"
 import { userActions } from "app/store"
 import { ApiCache, debug } from "app/helpers"
 import LRUCache, { Entry } from "lru-cache"
 import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
-import { SEDE_AUTH_URL } from "app/constants"
 
 export class PplReachedService extends ServiceBase {
   // TODO: add firebase cache
@@ -32,7 +30,7 @@ export class PplReachedService extends ServiceBase {
 
   constructor(props: ServiceProps) {
     super({
-      api: axios.create({ baseURL: SEDE_AUTH_URL }),
+      api: props.api,
       store: props.store,
     })
     const { store } = props
@@ -45,7 +43,6 @@ export class PplReachedService extends ServiceBase {
         void 0
     )
 
-    this.store = store
     this.get = this._memoizeApi(this._getRaw, cache)
   }
 
@@ -64,12 +61,10 @@ export class PplReachedService extends ServiceBase {
   }
 
   private _getRaw = (userId: number) => {
-    const { authCookie } = this.store.getState().auth
-    const headers = { "auth-cookie": authCookie }
     const body = new URLSearchParams(`UserID=${userId}`)
     const url = "/query/run/1/1313875/1615550"
 
-    return this.API.post<PeopleReached>(url, body, { headers }).then(
+    return this.API.post<PeopleReached>(url, body).then(
       (response) => response.data
     )
   }

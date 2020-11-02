@@ -10,19 +10,20 @@ import {
   SeApiServiceProvider,
   SnackbarProvider,
 } from "app/providers"
-import { getApi } from "app/test/api"
+import { createMockApi } from "app/test/api"
 import { mockAccessToken, users } from "app/test/fixtures"
 import * as oauth from "app/helpers/oauth"
 import { authActions, seApiActions } from "app/store"
-import { getApiError } from "app/helpers"
+import { createSeApi, createSedeApi, getApiError } from "app/helpers"
 
 describe("<AuthProvider />", () => {
   function renderUI(ui: React.ReactElement, store = createMockedStore()) {
-    const api = getApi(store)
+    const seApi = createMockApi(createSeApi(store))
+    const sedeApi = createMockApi(createSedeApi(store))
     const App = (ui) => (
       <Provider store={store}>
         <SnackbarProvider>
-          <AxiosProvider api={api}>
+          <AxiosProvider se={seApi} sede={sedeApi}>
             <SeApiServiceProvider>{ui}</SeApiServiceProvider>
           </AxiosProvider>
         </SnackbarProvider>
@@ -38,7 +39,8 @@ describe("<AuthProvider />", () => {
       renderResult,
       rerender,
       store,
-      api,
+      seApi,
+      sedeApi,
     }
   }
 
@@ -134,7 +136,7 @@ describe("<AuthProvider />", () => {
       },
     })
 
-    const { api } = renderUI(
+    const { seApi } = renderUI(
       <AuthProvider>
         <div />
       </AuthProvider>,
@@ -145,10 +147,10 @@ describe("<AuthProvider />", () => {
     })
     const actions = store.getActions()
 
-    expect(api.history.get).lastRequestedWith(
+    expect(seApi.history.get).lastRequestedWith(
       `access-tokens/${mockAccessToken}/invalidate`
     )
-    expect(api.defaults.params.access_token).toBeUndefined()
+    expect(seApi.defaults.params.access_token).toBeUndefined()
     expect(actions[0]).toStrictEqual(seApiActions.setQuotaRemaining(9977)) // request to check if token is valid
     expect(actions[1]).toStrictEqual(seApiActions.setQuotaRemaining(9977)) // request to invalidate
     expect(actions[2]).toStrictEqual(authActions.unauthorizeSuccess())
@@ -174,7 +176,7 @@ describe("<AuthProvider />", () => {
       return <button onClick={onClick}>click</button>
     }
 
-    const { api } = renderUI(
+    const { seApi } = renderUI(
       <AuthProvider>
         <Test />
       </AuthProvider>,
@@ -190,12 +192,12 @@ describe("<AuthProvider />", () => {
     // 1: check if login                 'access-tokens/my_access_token',
     // 2: log out by invalidating        'access-tokens/my_access_token/invalidate',
     // 3: get user info after logging in 'me'
-    expect(api.history.get).toHaveLength(3)
-    expect(api.history.get).nthRequestedWith(
+    expect(seApi.history.get).toHaveLength(3)
+    expect(seApi.history.get).nthRequestedWith(
       2,
       `access-tokens/${mockAccessToken}/invalidate`
     )
-    expect(api.history.get).lastRequestedWith("me")
+    expect(seApi.history.get).lastRequestedWith("me")
   })
 
   it.todo(

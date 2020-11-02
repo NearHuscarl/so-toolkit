@@ -14,20 +14,22 @@ describe("<UserAutocomplete />", () => {
   })
 
   it(`should throttle for ${DEBOUNCED_TIME}ms`, async () => {
-    const { context } = renderApp(<UserAutocomplete />)
-    const getSpy = jest.spyOn(context.api, "get")
+    const {
+      context: { seApi },
+    } = renderApp(<UserAutocomplete />)
     const searchBox = screen.getByRole(Roles.searchbox)
 
     await user.type(searchBox, "123")
     await act(async () => {
       jest.advanceTimersByTime(DEBOUNCED_TIME - 1)
     })
-    expect(getSpy).toBeCalledTimes(0)
+    expect(seApi.history.get).toHaveLength(0)
 
     await act(async () => {
       jest.advanceTimersByTime(1)
     })
-    expect(getSpy).toBeCalledTimes(1)
+    expect(seApi.history.get).toHaveLength(1)
+    expect(seApi.history.get).lastRequestedWith("users")
     // console.log(hasInputValue(searchBox, "123"))
   })
 

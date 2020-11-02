@@ -20,17 +20,14 @@ export function SeApiServiceProvider(props: Props) {
   const store = useStore()
   const api = useAxios()
   const { children, service } = props
-  const serviceProps = { store, api }
+  const seProps = { store, api: api.getSe.bind(api) }
+  const sedeProps = { store, api: api.getSede.bind(api) }
   const defaultSetter = () => ({
-    userService: new UserService(serviceProps),
-    pplReachedService: new PplReachedService(serviceProps),
-    authService: new AuthService(serviceProps),
+    userService: new UserService(seProps),
+    authService: new AuthService(seProps),
+    pplReachedService: new PplReachedService(sedeProps),
   })
   const [value] = React.useState<SeApiService>(service ?? defaultSetter)
-
-  React.useEffect(() => {
-    value.userService.API = api
-  }, [api, value.userService])
 
   return <SeApiContext.Provider value={value}>{children}</SeApiContext.Provider>
 }

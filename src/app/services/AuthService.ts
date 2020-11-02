@@ -1,48 +1,16 @@
-import axios from "axios"
-import { ServiceBase } from "app/services/ServiceBase"
+import isAfter from "date-fns/isAfter"
+import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
 import { ApiError, authenticate } from "app/helpers"
-import { SEDE_AUTH_URL } from "app/constants"
-import { AppStore } from "app/store"
-
-export type LoginSEDEData = {
-  email: string
-  password: string
-}
-
-export type LoginSEDEResponse = {
-  authCookie: string
-}
-
-export type OAuthResponse = {
-  access_token: string
-}
-type Props = { store: AppStore }
+import { AccessTokenResponse, ApiResponse } from "app/types"
 
 export class AuthService extends ServiceBase {
-  constructor(props: Props) {
-    const { store } = props
-    const api = axios.create({ baseURL: SEDE_AUTH_URL })
-
+  constructor(props: ServiceProps) {
+    const { store, api } = props
     super({ api, store })
   }
 
-  loginSEDE(formData: LoginSEDEData) {
-    const body = new URLSearchParams(formData)
-    return this.API.post<LoginSEDEResponse>("/auth", body).then(
-      (r) => r,
-      (e) =>
-        Promise.reject(
-          new ApiError({
-            id: -1,
-            name: "Login failed",
-            message: e.response.data.error,
-          })
-        )
-    )
-  }
-
-  authorize() {
-    return authenticate({
+  async authorize() {
+    const result = await authenticate({
       redirectUri: window.location.origin + "/login/success",
       clientId: Number(process.env.REACT_APP_STACK_APP_CLIENT_ID!),
       // default expire interval is too short and can't be changed
@@ -50,5 +18,48 @@ export class AuthService extends ServiceBase {
       // TODO: uncomment after doing more testing to make sure nothing goes wrong
       // scope: ["no_expiry"],
     })
+
+    this.API.defaults.params.access_token = result.accessToken
+    return result
+  }
+
+  async unauthorize(accessToken?: string) {
+    if (!accessToken) return
+
+    const { ...params } = this.API.defaults.params
+    params.site = undefined // invalidate will throw if pass site params
+    const response = await this.API.get<ApiResponse>(
+      `access-tokens/${accessToken}/invalidate`,
+      { params }
+    )
+
+    if (response.data.items?.length === 0) {
+      throw new ApiError({
+        id: -1,
+        name: "Access token is either not available or already expired",
+        message: "Logout failed",
+      })
+    }
+
+    this.API.defaults.params.access_token = undefined
+  }
+
+  async isTokenValid(accessToken?: string, expireDate?: string) {
+    const { ...params } = this.API.defaults.params
+
+    params.access_token = undefined
+    params.site = undefined // invalidate will throw if pass site params
+
+    // the access token has no expire date and should never be invalid
+    // unless we explicitly invalidate it when logging out but just in case
+    const response = await this.API.get<AccessTokenResponse>(
+      `access-tokens/${accessToken}`,
+      { params }
+    )
+    const isValid = !!response.data.items?.some(
+      (at) => at.access_token === accessToken
+    )
+    const isExpired = !expireDate || isAfter(Date.now(), Date.parse(expireDate))
+    return isValid && !isExpired
   }
 }

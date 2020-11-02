@@ -16,7 +16,6 @@ import * as yup from "yup"
 import chromeImg from "app/images/Chrome.png"
 import firefoxImg from "app/images/Firefox.png"
 import { useAuth, useTry } from "app/hooks"
-import { authActions, useDispatch } from "app/store"
 import { AuthResult } from "app/store/auth.duck"
 import { getBrowser } from "app/helpers"
 
@@ -94,7 +93,7 @@ function Step2(props: StepProps) {
   const { activeStep, control, errors, handleSubmit } = props
   const display = activeStep === 1
   const history = useHistory()
-  const dispatch = useDispatch()
+  const { login } = useAuth()
 
   return (
     <Box
@@ -126,7 +125,7 @@ function Step2(props: StepProps) {
           color="primary"
           type="submit"
           onClick={handleSubmit(async (data) => {
-            dispatch(authActions.authorizeSuccess(data))
+            login(data)
             history.push("/")
           })}
         >

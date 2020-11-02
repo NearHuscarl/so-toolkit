@@ -8,7 +8,8 @@ import {
 } from "app/providers"
 import { Provider } from "react-redux"
 import { createMockedStore, InitialMockState } from "app/test/index"
-import { getApi } from "app/test/api"
+import { createMockApi } from "app/test/api"
+import { createSeApi, createSedeApi } from "app/helpers"
 
 export type MockOptions = {
   apiResponseDelay?: number
@@ -22,12 +23,13 @@ export function renderApp(
 ) {
   const { apiResponseDelay = 0, initialState, ...opts } = options
   const store = createMockedStore(initialState)
-  const api = getApi(store, { apiResponseDelay })
+  const seApi = createMockApi(createSeApi(store), { apiResponseDelay })
+  const sedeApi = createMockApi(createSedeApi(store), { apiResponseDelay })
 
   const App = (comp) => (
     <Provider store={store}>
       <ThemeProvider>
-        <AxiosProvider api={api}>
+        <AxiosProvider se={seApi} sede={sedeApi}>
           <SeApiServiceProvider>
             <SnackbarProvider>{comp}</SnackbarProvider>
           </SeApiServiceProvider>
@@ -46,7 +48,8 @@ export function renderApp(
     rerender,
     context: {
       store,
-      api,
+      seApi,
+      sedeApi,
     },
   }
 }

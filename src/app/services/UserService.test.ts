@@ -1,15 +1,16 @@
 import { UserService } from "app/services/UserService"
 import { createMockedStore, MockOptions } from "app/test"
 import { createUsersMatching, mockAccessToken, users } from "app/test/fixtures"
-import { getApi } from "app/test/api"
+import { createMockApi } from "app/test/api"
+import { createSeApi } from "app/helpers"
 
 describe("UserService", () => {
   let userNear, userJon, allUserNear, allUserJon, me
 
   function createMockedUserService(option: MockOptions = {}) {
     const store = createMockedStore()
-    const api = getApi(store, option)
-    const userService = new UserService({ api, store })
+    const api = createMockApi(createSeApi(store), option)
+    const userService = new UserService({ api: () => api, store })
 
     return {
       store,

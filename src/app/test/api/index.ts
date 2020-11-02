@@ -1,8 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig } from "axios"
 import MockAdapter from "axios-mock-adapter"
-import { createApi } from "app/helpers"
-import { AppStore } from "app/store"
-import { createMockedStore } from "app/test"
 import { MockOptions } from "app/test/renderer"
 import * as user from "./users"
 import * as accessTokens from "./accessTokens"
@@ -32,11 +29,11 @@ export type MockAxiosInstance = AxiosInstance & {
   resetHistory: () => void
 }
 
-export function getApi(
-  store: AppStore = createMockedStore(),
+export function createMockApi(
+  api: AxiosInstance,
   option: MockOptions = {}
 ): MockAxiosInstance {
-  const mockedApi: any = createApi(store)
+  const mockedApi: any = api
   const mock = applyApiMock(mockedApi, option)
 
   mockedApi.history = mock.history

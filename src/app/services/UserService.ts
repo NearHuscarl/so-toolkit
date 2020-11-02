@@ -1,8 +1,7 @@
-import { AxiosInstance } from "axios"
 import LRUCache, { Entry } from "lru-cache"
 import memoize from "lodash/memoize"
 import { User, UserParams, UserResponse } from "app/types"
-import { AppStore, userActions } from "app/store"
+import { userActions } from "app/store"
 import { ApiCache, debug } from "app/helpers"
 import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
 

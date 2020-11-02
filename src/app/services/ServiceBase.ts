@@ -2,16 +2,19 @@ import { AxiosInstance } from "axios"
 import { AppStore } from "app/store"
 
 export type ServiceProps = {
-  api: AxiosInstance
+  api: () => AxiosInstance
   store: AppStore
 }
 
 export class ServiceBase {
-  API: AxiosInstance
+  private readonly _api: () => AxiosInstance
+  get API() {
+    return this._api()
+  }
   store: AppStore
 
   constructor(props: ServiceProps) {
-    this.API = props.api
+    this._api = props.api
     this.store = props.store
   }
 }
