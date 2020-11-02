@@ -1,7 +1,7 @@
 import React, { useRef } from "react"
 import Button from "@material-ui/core/Button"
 import MockAdapter from "axios-mock-adapter"
-import { __DEV__ } from "app/constants"
+import { __DEV__, NO_OP } from "app/constants"
 import { devToolActions, useDispatch, useSelector } from "app/store"
 import { useAxios } from "app/hooks"
 import { FormControlLabel, Checkbox } from "@material-ui/core"
@@ -20,7 +20,7 @@ function useMockedApi() {
       }
     }
   }
-  return () => void 0
+  return NO_OP
 }
 
 export function DevTool() {
@@ -48,7 +48,7 @@ export function DevTool() {
   }
 
   return (
-    <div style={{ position: "absolute", bottom: 10, left: 10 }}>
+    <div style={{ position: "fixed", bottom: 10, left: 10 }}>
       <FormControlLabel
         control={
           <Checkbox
