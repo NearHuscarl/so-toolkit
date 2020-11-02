@@ -64,6 +64,10 @@ export class PplReachedService extends ServiceBase {
     const body = new URLSearchParams(`UserID=${userId}`)
     const url = "/query/run/1/1313875/1615550"
 
+    // TODO: Edward Strange
+    // line	"39"
+    // error	"Divide by zero error encountered.\r\nThe statement has been terminated."
+
     return this.API.post<PeopleReached>(url, body).then(
       (response) => response.data
     )

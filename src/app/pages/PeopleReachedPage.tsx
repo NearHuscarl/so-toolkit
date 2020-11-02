@@ -17,7 +17,7 @@ function printObject(value: any) {
   return JSON.stringify(value, null, 4)
 }
 
-export function ReputationPage() {
+export function PeopleReachedPage() {
   const { pplReachedService } = useSeApi()
   const { $try, data, isPending } = useTry(pplReachedService.get)
   const onChangeUser = async (user: User) => {

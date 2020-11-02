@@ -126,7 +126,8 @@ function Step2(props: StepProps) {
           type="submit"
           onClick={handleSubmit(async (data) => {
             login(data)
-            history.push("/")
+            // TODO: push last private location
+            history.push("/people-reached")
           })}
         >
           Submit
