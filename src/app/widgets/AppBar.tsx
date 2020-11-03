@@ -4,13 +4,14 @@ import {
   Toolbar,
   IconButton,
   Typography,
-  Button,
 } from "@material-ui/core"
 import MenuIcon from "@material-ui/icons/Menu"
-import { makeStyles } from "app/styles"
 import { createStyles } from "@material-ui/styles"
-import { AuthButton } from "app/widgets"
 import { useLocation } from "react-router-dom"
+import { makeStyles } from "app/styles"
+import { AuthButton } from "app/widgets"
+import { AppDrawer } from "app/widgets/AppDrawer"
+import { useSelector } from "app/store"
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -18,7 +19,7 @@ const useStyles = makeStyles((theme) =>
       flexGrow: 1,
     },
     menuButton: {
-      marginRight: theme.spacing(2),
+      marginRight: theme.spacing(1),
     },
     title: {
       flexGrow: 1,
@@ -28,24 +29,33 @@ const useStyles = makeStyles((theme) =>
 
 export function AppBar() {
   const classes = useStyles()
-  const location = useLocation()
+  const { pathname } = useLocation()
+  const isAuthRoute = pathname === "/login"
+  const isLogin = useSelector((state) => Boolean(state.auth.accessToken))
+  const [drawerOpen, setDrawerOpen] = React.useState(false)
 
   return (
-    <MuiAppBar position="static">
-      <Toolbar>
-        {/*<IconButton*/}
-        {/*  edge="start"*/}
-        {/*  className={classes.menuButton}*/}
-        {/*  color="inherit"*/}
-        {/*  aria-label="menu"*/}
-        {/*>*/}
-        {/*  <MenuIcon />*/}
-        {/*</IconButton>*/}
-        <Typography variant="h6" className={classes.title}>
-          SO Toolkit
-        </Typography>
-        {location.pathname !== "/login" && <AuthButton />}
-      </Toolbar>
-    </MuiAppBar>
+    <>
+      <MuiAppBar position="static">
+        <Toolbar>
+          {isLogin && (
+            <IconButton
+              onClick={() => setDrawerOpen(true)}
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="menu"
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" className={classes.title}>
+            SO Toolkit
+          </Typography>
+          {!isAuthRoute && <AuthButton />}
+        </Toolbar>
+      </MuiAppBar>
+      <AppDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
   )
 }
