@@ -27,9 +27,9 @@ SE_EMAIL=email
 SE_PASSWORD=password
 ```
 
-* Modify any SQL file in `sql/`
+* Modify any SQL file in [`sql/`](https://github.com/NearHuscarl/so-toolkit/tree/master/sql)
 * Run `npm run commit` to get the new revision id of the query
-* Open `src/app/sqlQueries.ts` to see the result
+* Open [`src/app/sqlQueries.ts`](https://github.com/NearHuscarl/so-toolkit/blob/master/src/app/sqlQueries.ts) to see the result
 
 <!--
 * Setup stackapps to use OAuth2: See [this answer](https://stackapps.com/a/6638/72145) 
