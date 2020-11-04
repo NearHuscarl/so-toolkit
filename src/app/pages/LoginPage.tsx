@@ -15,9 +15,10 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 import chromeImg from "app/images/Chrome.png"
 import firefoxImg from "app/images/Firefox.png"
-import { useAuth, useTry } from "app/hooks"
+import { useAuth, useForceUpdate, useTry } from "app/hooks"
 import { AuthResult } from "app/store/auth.duck"
 import { getBrowser } from "app/helpers"
+import { useSelector } from "app/store"
 
 const schema = yup.object().shape({
   authCookie: yup
@@ -94,6 +95,12 @@ function Step2(props: StepProps) {
   const display = activeStep === 1
   const history = useHistory()
   const { login } = useAuth()
+  const forceUpdate = useForceUpdate()
+
+  React.useEffect(() => {
+    forceUpdate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Box
@@ -143,8 +150,12 @@ function getSteps() {
 
 export function LoginPage() {
   const [activeStep, setActiveStep] = React.useState(0)
+  const authCookie = useSelector(
+    (state) => state.auth.authCookie?.split(".ASPXAUTH=")[1]
+  )
   const form = useForm<AuthResult>({
     resolver: yupResolver(schema),
+    defaultValues: { authCookie },
   })
 
   const handleNext = () => {

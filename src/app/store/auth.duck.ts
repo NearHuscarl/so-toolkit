@@ -37,7 +37,7 @@ const slice = createSlice({
       state.me = undefined
       state.accessToken = undefined
       state.expireDate = undefined
-      state.authCookie = undefined
+      // state.authCookie = undefined
     },
     // for debugging
     _setExpireDate(state, action: PayloadAction<string>) {
