@@ -10,5 +10,5 @@ export const GET_USER_REVISION_ID = 1623160
 // Title: People Reached (Final)
 // Description: People Reached is an estimate of how many times your Questions or Answers have been useful to somebody
 // Query link: https://data.stackexchange.com/stackoverflow/query/1321873
-export const PEOPLE_REACHED_REVISION_ID = 1626268
+export const PEOPLE_REACHED_REVISION_ID = 1627195
 

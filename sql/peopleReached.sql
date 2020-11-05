@@ -30,8 +30,12 @@ otherwise, you get none.
 set nocount on
 
 declare @userId int = ##userID?1##
+
 declare @questionType tinyint = 1
 declare @answerType tinyint = 2
+-- it's 2020 and I can't even have a boolean literal
+declare @true bit = convert(bit, 1)
+declare @false bit = convert(bit, 0)
 
 declare @dt1 varchar(25) = convert(varchar, getdate(), 21)
 
@@ -141,12 +145,12 @@ select
     [1of4:IsAccepted]+
     [2of4:ScoreMin5]+
     [3of4:20pVotes]+
-    [4of4:IsInTop3] > 0, 1, 0) as [impact],
+    [4of4:IsInTop3] > 0, @true, @false) as [impact],
   iif (
     [1of4:IsAccepted]+
     [2of4:ScoreMin5]+
     [3of4:20pVotes]+
-    [4of4:IsInTop3] = 0, 1, 0) as [No1234]
+    [4of4:IsInTop3] = 0, @true, @false) as [No1234]
 into #answers5
 from #answers4  -----------------------------> (now has 1,2,3,4)
 
@@ -160,7 +164,7 @@ select
   [score],
   [postTypeId],
   [viewCount],
-  1 as impact, -- all non-deleted questions are eligible
+  @true as impact, -- all non-deleted questions are eligible
   0 as [1of4:IsAccepted],
   0 as [2of4:ScoreMin5],
   0 as [3of4:20pVotes],
@@ -168,7 +172,7 @@ select
   0 as [Votes:all],
   0 as [Votes:me],
   0 as [Rank],
-  0 as [No1234]
+  @false as [No1234]
 into #eligibleQuestions
 from posts
 where
@@ -188,16 +192,16 @@ declare @dt8 varchar(25) = convert(varchar,getdate(),21)
     [impact],
     viewCount,
     score,
-    iif (postTypeId = @questionType, 1, null) as [question],
-    iif (postTypeId = @questionType, null, 1) as [score>0],
-    iif ([No1234]=1, 0,
-      iif ([1of4:IsAccepted]=1, 1, null)) as [accepted],
-    iif ([No1234]=1, 0,
-      iif ([2of4:ScoreMin5]=1, 1, null)) as [score5+],
-    iif ([No1234]=1, 0,
-      iif ([3of4:20pVotes]=1, 1, null)) as [20%Votes],
-    iif ([No1234]=1, 0,
-      iif ([4of4:IsInTop3]=1, 1, null)) as [top3]
+    iif (postTypeId = @questionType, @true, @false) as [question],
+    iif (postTypeId = @questionType, @false, @true) as [score>0],
+    iif ([No1234]=1, @false,
+      iif ([1of4:IsAccepted]=1, @true, null)) as [accepted],
+    iif ([No1234]=1, @false,
+      iif ([2of4:ScoreMin5]=1, @true, null)) as [score5+],
+    iif ([No1234]=1, @false,
+      iif ([3of4:20pVotes]=1, @true, null)) as [20%Votes],
+    iif ([No1234]=1, @false,
+      iif ([4of4:IsInTop3]=1, @true, null)) as [top3]
   from #answers5
 UNION all
   select ------> FINALIZE QUESTION LIST
@@ -207,27 +211,27 @@ UNION all
     [impact],
     viewCount,
     score,
-    iif (postTypeId = @questionType, 1, null) as [question],
-    iif (postTypeId = @questionType, null, 1) as [score>0],
-    iif ([No1234]=1, 0,
-      iif ([1of4:IsAccepted]=1, 1, null)) as [accepted],
-    iif ([No1234]=1, 0,
-      iif ([2of4:ScoreMin5]=1, 1, null)) as [score5+],
-    iif ([No1234]=1, 0,
-      iif ([3of4:20pVotes]=1, 1, null)) as [20%Votes],
-    iif ([No1234]=1, 0,
-      iif ([4of4:IsInTop3]=1, 1, null)) as [top3]
+    iif (postTypeId = @questionType, @true, @false) as [question],
+    iif (postTypeId = @questionType, @false, @true) as [score>0],
+    iif ([No1234]=1, @false,
+      iif ([1of4:IsAccepted]=1, @true, null)) as [accepted],
+    iif ([No1234]=1, @false,
+      iif ([2of4:ScoreMin5]=1, @true, null)) as [score5+],
+    iif ([No1234]=1, @false,
+      iif ([3of4:20pVotes]=1, @true, null)) as [20%Votes],
+    iif ([No1234]=1, @false,
+      iif ([4of4:IsInTop3]=1, @true, null)) as [top3]
   from #eligibleQuestions
 UNION all
   select ------> (list EXCLUDED answers - these all failed)
     format(a.creationDate,'yyyy-MM-dd') as [date],
     a.id,
     q.title,
-    0 as impact,
+    @false as impact,
     q.viewCount,
     a.score,
-    null as question,
-    0 as [score>0],
+    @false as question,
+    @false as [score>0],
     null as [accepted],
     null as [score5+],
     null as [20%Votes],
