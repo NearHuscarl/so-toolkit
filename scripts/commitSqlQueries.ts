@@ -1,5 +1,4 @@
-import { AxiosError } from "axios"
-
+// @ts-ignore
 const env = require("dotenv").config({ path: ".env.development.local" })
 const { stringify } = require("envfile")
 const fs = require("fs").promises
@@ -94,7 +93,7 @@ async function getQueries() {
 }
 
 function handleError(e) {
-  if ((e as AxiosError).isAxiosError) {
+  if (e.isAxiosError) {
     console.error(e.response.data)
   }
 
@@ -223,5 +222,3 @@ async function main() {
 }
 
 main().then(() => {})
-
-export {}
