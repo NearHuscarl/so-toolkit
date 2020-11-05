@@ -1,3 +1,5 @@
+import { AxiosError } from "axios"
+
 const env = require("dotenv").config({ path: ".env.development.local" })
 const { stringify } = require("envfile")
 const fs = require("fs").promises
@@ -22,6 +24,7 @@ type SqlQuery = {
   queryId: number
   title: string
   description?: string
+  changed: boolean
 }
 
 type SqlQueryResult = SqlQuery & {
@@ -50,34 +53,71 @@ function validateQuery(sqlQuery: SqlQuery) {
   }
 }
 
-async function getChangedQueries() {
-  const changedFiles: string[] = await getChangedFiles()
-  const promises = changedFiles
-    .filter((p) => p.startsWith("sql/"))
-    .map(async (path) => {
-      const content = await fs.readFile(path, "utf8")
-      const lines = content.split(EOL)
-      const queryId = parseFloat(
-        lines
-          .find((line) => line.startsWith("-- QueryID="))
-          .match(/QueryID=(\d+)/)[1]
-      )
-      const title = lines
-        .find((line) => line.startsWith("-- Title="))
-        .match(/Title=(.+)/)[1]
-      const description = lines
-        .find((line) => line.startsWith("-- Description="))
-        ?.match(/Description=(.+)/)[1]
+async function getQueries() {
+  const changedSqlFiles = new Set<string>(
+    (await getChangedFiles())
+      .filter((p) => p.startsWith("sql/"))
+      .map((p) => path.normalize(p))
+  )
+  const allQueryFiles = ((await fs.readdir("sql/")) as string[]).map((f) =>
+    path.join("sql", f)
+  )
+  const promises = allQueryFiles.map(async (path) => {
+    const content = await fs.readFile(path, "utf8")
+    const lines = content.split(EOL)
+    const changed = changedSqlFiles.has(path)
+    const queryId = parseFloat(
+      lines
+        .find((line) => line.startsWith("-- QueryID="))
+        ?.match(/QueryID=(\d+)/)[1]
+    )
+    const title = lines
+      .find((line) => line.startsWith("-- Title="))
+      ?.match(/Title=(.+)/)[1]
+    const description = lines
+      .find((line) => line.startsWith("-- Description="))
+      ?.match(/Description=(.+)/)[1]
 
-      const result: SqlQuery = { path, content, queryId, title, description }
-      validateQuery(result)
-      return result
-    })
+    const result: SqlQuery = {
+      path,
+      content,
+      queryId,
+      title,
+      description,
+      changed,
+    }
+    validateQuery(result)
+    return result
+  })
 
   return await Promise.all(promises)
 }
 
-async function checkAuth() {
+function handleError(e) {
+  if ((e as AxiosError).isAxiosError) {
+    console.error(e.response.data)
+  }
+
+  throw new Error(e)
+}
+
+async function authenticate() {
+  const loginData = getLoginData()
+  const body = new URLSearchParams(loginData)
+
+  try {
+    const response = await getApi().post("/auth", body)
+
+    devEnvs.SEDE_AUTH_COOKIE = response.data.authCookie
+    await fs.writeFile(".env.development.local", stringify(devEnvs))
+    console.log("Retrieved Auth Cookie.")
+  } catch (e) {
+    handleError(e)
+    process.exit(1)
+  }
+}
+
+function getLoginData() {
   if (!process.env.SE_EMAIL || !process.env.SE_PASSWORD) {
     console.error(
       "Require Stack Exchange email and password to commit changed queries to SEDE"
@@ -85,32 +125,43 @@ async function checkAuth() {
     process.exit(9)
   }
 
-  if (!devEnvs.SEDE_AUTH_COOKIE) {
-    console.log("SEDE Auth Cookie not found. Login now...")
-    const body = new URLSearchParams({
-      email: process.env.SE_EMAIL,
-      password: process.env.SE_PASSWORD,
-    })
-
-    try {
-      const response = await getApi().post("/auth", body)
-
-      devEnvs.SEDE_AUTH_COOKIE = response.data.authCookie
-      await fs.writeFile(".env.development.local", stringify(devEnvs))
-      console.log("Retrieved Auth Cookie.")
-    } catch (e) {
-      console.error(e.response.data)
-      process.exit(1)
-    }
+  return {
+    email: process.env.SE_EMAIL,
+    password: process.env.SE_PASSWORD,
   }
 }
 
-async function saveQuery(sqlQuery: SqlQuery) {
-  const { queryId, title, description = "", content: sql, path } = sqlQuery
-  console.log(`Updating query ${path}`)
-  const body = new URLSearchParams({ title, description, sql })
+async function checkAuth() {
+  if (!devEnvs.SEDE_AUTH_COOKIE) {
+    console.log("SEDE Auth Cookie not found. Login now...")
+    await authenticate()
+  }
+}
 
+let revisionIds = [] as any[]
+async function saveQuery(sqlQuery: SqlQuery, retry: boolean = true) {
   try {
+    const {
+      queryId,
+      title,
+      description = "",
+      content: sql,
+      path,
+      changed,
+    } = sqlQuery
+
+    if (!changed) {
+      if (revisionIds.length === 0) {
+        revisionIds = JSON.parse(
+          await fs.readFile("scripts/revisionIds.json", "utf8")
+        )
+      }
+      const { revisionId } = revisionIds.find((r) => r.path === path)
+      return { ...sqlQuery, revisionId } as SqlQueryResult
+    }
+
+    console.log(`Updating query ${path}`)
+    const body = new URLSearchParams({ title, description, sql })
     const headers = { "auth-cookie": devEnvs.SEDE_AUTH_COOKIE }
     const response = await getApi().post(`/query/save/1/${queryId}`, body, {
       headers,
@@ -119,12 +170,26 @@ async function saveQuery(sqlQuery: SqlQuery) {
 
     return { ...sqlQuery, revisionId } as SqlQueryResult
   } catch (e) {
-    console.error(e.response.data)
+    if (e.response?.data?.error?.startsWith("Need captcha") && retry) {
+      console.log("auth cookie is expired. Try to login again...")
+      await authenticate()
+      return await saveQuery(sqlQuery, false)
+    }
+
+    handleError(e)
     process.exit(1)
   }
 }
 
 async function updateMigration(results: SqlQueryResult[]) {
+  await fs.writeFile(
+    "scripts/revisionIds.json",
+    JSON.stringify(
+      results.map((r) => ({ revisionId: r.revisionId, path: r.path }))
+    ),
+    "utf8"
+  )
+
   const lines = [] as string[]
   const warning =
     "// This file is auto generated via 'npm run commit' command. Do not touch."
@@ -151,14 +216,12 @@ async function updateMigration(results: SqlQueryResult[]) {
 async function main() {
   await checkAuth()
 
-  const queries = await getChangedQueries()
+  const queries = await getQueries()
   const results = await Promise.all(queries.map((q) => saveQuery(q)))
 
   await updateMigration(results)
 }
 
-// TODO:
-// update AUTH_COOKIE if capdatchas
-main()
+main().then(() => {})
 
 export {}

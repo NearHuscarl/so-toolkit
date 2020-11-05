@@ -4,6 +4,7 @@ import { userActions } from "app/store"
 import { ApiCache, debug } from "app/helpers"
 import LRUCache, { Entry } from "lru-cache"
 import { ServiceBase, ServiceProps } from "app/services/ServiceBase"
+import { PEOPLE_REACHED_REVISION_ID } from "app/sqlQueries"
 
 export class PplReachedService extends ServiceBase {
   // TODO: add firebase cache
@@ -61,8 +62,8 @@ export class PplReachedService extends ServiceBase {
   }
 
   private _getRaw = (userId: number) => {
-    const body = new URLSearchParams(`UserID=${userId}`)
-    const url = "/query/run/1/1313875/1615550"
+    const body = new URLSearchParams(`userID=${userId}`)
+    const url = `/query/run/1/1321873/${PEOPLE_REACHED_REVISION_ID}`
 
     // TODO: Edward Strange
     // line	"39"
