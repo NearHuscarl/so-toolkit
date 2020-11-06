@@ -1,3 +1,4 @@
+// @ts-ignore
 const env = require("dotenv").config({ path: ".env.development.local" })
 const { stringify } = require("envfile")
 const fs = require("fs").promises
