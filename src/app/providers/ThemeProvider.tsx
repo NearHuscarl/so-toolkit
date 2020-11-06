@@ -27,6 +27,13 @@ export const theme: MyTheme = createMuiTheme({
       variant: "contained",
     },
   },
+  overrides: {
+    MuiTab: {
+      root: {
+        fontWeight: 600,
+      },
+    },
+  },
 
   // @ts-ignore
   app: {

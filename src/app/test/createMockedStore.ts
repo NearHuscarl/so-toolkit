@@ -20,6 +20,9 @@ export function createMockedStore(state: InitialMockState = {}) {
       useMockedApi: true,
     },
     auth: {},
+    impactPage: {
+      currentTab: "1",
+    },
   }
 
   return mockStore(merge(initialState as any, state))
