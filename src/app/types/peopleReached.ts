@@ -1,4 +1,4 @@
-type ColumnType = "Text" | "Number" | 'Default'| 'Date'
+type ColumnType = "Text" | "Number" | "Default" | "Date"
 type ColumnInfo<Name extends string, Type extends ColumnType = "Text"> = {
   name: Name
   type: Type
@@ -37,44 +37,35 @@ export declare namespace PplReached {
   }
 
   type LastUpdate = {
-    columns: [
-      ColumnInfo<"lastUpdated">,
-      ColumnInfo<"lastUpdatedDate", "Date">,
-    ]
+    columns: [ColumnInfo<"lastUpdated">, ColumnInfo<"lastUpdatedDate", "Date">]
     rows: [
-      lastUpdated: string,
-      lastUpdatedDate: number,
+      string, // lastUpdated
+      number // lastUpdatedDate
     ][]
   }
 
   type ViewsByPostType = {
-    columns: [
-      ColumnInfo<"postType">,
-      ColumnInfo<"peopleReached", "Number">,
-    ]
-    rows: [['question', number],['answer', number],['all', number]]
+    columns: [ColumnInfo<"postType">, ColumnInfo<"peopleReached", "Number">]
+    rows: [["question", number], ["answer", number], ["all", number]]
   }
 
   type ViewsByTag = {
     columns: [
       ColumnInfo<"tag">,
       // TODO: change to peopleReached for consistency
-      ColumnInfo<"viewCount", "Number">,
+      ColumnInfo<"viewCount", "Number">
     ]
     rows: [
-      tag: string,
-      views: number
+      string, // tag
+      number // views
     ][]
   }
 
   type ViewsByMonth = {
-    columns: [
-      ColumnInfo<"month">,
-      ColumnInfo<"peopleReached", "Number">,
-    ]
+    columns: [ColumnInfo<"month">, ColumnInfo<"peopleReached", "Number">]
     rows: [
-      month: string,
-      views: number
+      string, // month
+      number // views
     ][]
   }
 }
@@ -85,6 +76,6 @@ export type PeopleReached = {
     PplReached.LastUpdate,
     PplReached.ViewsByPostType,
     PplReached.ViewsByTag,
-    PplReached.ViewsByMonth,
+    PplReached.ViewsByMonth
   ]
 }
