@@ -32,6 +32,7 @@ export function useTry<F extends PromiseFn, T extends ThenArg<ReturnType<F>>>(
       } catch (e) {
         const error = getApiError(e)
         setState((s) => ({ ...s, isPending: false, error }))
+        console.error(e)
         if (errorSnackbar) {
           createErrorSnackbar(error.message)
         }
