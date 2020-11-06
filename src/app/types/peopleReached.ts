@@ -21,19 +21,18 @@ export declare namespace PplReached {
       ColumnInfo<"top3", "Default">
     ]
     rows: [
-      date: string,
-      id: number,
-      title: string,
-      impact: boolean,
-      viewCount: number,
-      score: number,
-      question: boolean,
-      postiveScore: boolean,
-      accepted: boolean | null,
-      score5: boolean | null,
-      // goddamn typescript can't even display number
-      oneFifthVotes: boolean | null,
-      top3: boolean | null
+      string, // date
+      number, // id
+      string, // title
+      boolean, // impact
+      number, // viewCount
+      number, // score
+      boolean, // question
+      boolean, // positiveScore
+      boolean | null, // accepted
+      boolean | null, // score5+
+      boolean | null, // 20%Votes
+      boolean | null // top3
     ][]
   }
 
