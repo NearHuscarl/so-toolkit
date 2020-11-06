@@ -3,17 +3,24 @@ import MockAdapter from "axios-mock-adapter"
 import { MockOptions } from "app/test/renderer"
 import * as user from "./users"
 import * as accessTokens from "./accessTokens"
+import * as peopleReached from "./peopleReached"
+
+const sedeMocks = [peopleReached]
+const seMocks = [user, accessTokens]
 
 export function applyApiMock(
   axiosInstance: AxiosInstance,
-  option: MockOptions = {}
+  option: MockOptions = {},
+  api: "sede" | "se"
 ) {
   const mock = new MockAdapter(axiosInstance, {
     delayResponse: option.apiResponseDelay,
   })
 
-  Object.values(user).forEach((applyMock) => applyMock(mock))
-  Object.values(accessTokens).forEach((applyMock) => applyMock(mock))
+  const mocks = api === "sede" ? sedeMocks : seMocks
+  mocks.forEach((m) =>
+    Object.values(m).forEach((applyMock: any) => applyMock(mock))
+  )
 
   mock.onAny().reply((config) => {
     console.log("something went wrong", config)
@@ -34,7 +41,8 @@ export function createMockApi(
   option: MockOptions = {}
 ): MockAxiosInstance {
   const mockedApi: any = api
-  const mock = applyApiMock(mockedApi, option)
+  // TODO: add support for sede
+  const mock = applyApiMock(mockedApi, option, "se")
 
   mockedApi.history = mock.history
   mockedApi.resetHistory = mock.resetHistory

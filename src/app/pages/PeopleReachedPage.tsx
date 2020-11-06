@@ -7,14 +7,11 @@ import {
   LinearProgress,
   Typography,
 } from "@material-ui/core"
-import { User } from "app/types"
+import { PeopleReached, User } from "app/types"
 import { useSeApi, useTry } from "app/hooks"
 
-function printObject(value: any) {
-  if (typeof value === "string") {
-    return value
-  }
-  return JSON.stringify(value, null, 4)
+function printObject(value?: PeopleReached) {
+  return JSON.stringify(value?.resultSets || "No result", null, 4)
 }
 
 export function PeopleReachedPage() {

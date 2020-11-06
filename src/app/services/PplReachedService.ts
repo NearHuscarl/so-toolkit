@@ -37,7 +37,7 @@ export class PplReachedService extends ServiceBase {
     const { store } = props
     const { user } = store.getState()
     const cache = this._setCache(
-      user.cache,
+      user.cache as any,
       (cache) =>
         // TODO: cache
         // store.dispatch(userActions.setUserCache(cache.dump()))

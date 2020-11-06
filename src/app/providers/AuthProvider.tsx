@@ -4,6 +4,7 @@ import { useAxios, useSeApi, useTry } from "app/hooks"
 import { User } from "app/types"
 import { accessTokenErrorIds } from "app/helpers"
 import { AuthResult } from "app/store/auth.duck"
+import { mockAccessToken } from "app/test/fixtures"
 
 type AuthorizeResult = {
   user: User
@@ -67,7 +68,11 @@ function useAuthContext(): Context {
 
   const isTokenValid = useCallback(async () => {
     const { expireDate, accessToken } = store.getState().auth
-    return authService.isTokenValid(accessToken, expireDate)
+    const { useMockedApi } = store.getState().devTool
+    return authService.isTokenValid(
+      useMockedApi ? mockAccessToken : accessToken,
+      expireDate
+    )
   }, [authService, store])
 
   return { isTokenValid, authorize, unauthorize, isLogin, login }

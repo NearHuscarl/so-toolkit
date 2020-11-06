@@ -43,6 +43,9 @@ const slice = createSlice({
     _setExpireDate(state, action: PayloadAction<string>) {
       state.expireDate = action.payload
     },
+    _setAuthCookie(state, action: PayloadAction<string>) {
+      state.authCookie = action.payload
+    },
   },
 })
 

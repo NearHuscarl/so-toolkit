@@ -7,16 +7,20 @@ import { useAxios } from "app/hooks"
 import { FormControlLabel, Checkbox } from "@material-ui/core"
 
 function useMockedApi() {
-  const { getSe } = useAxios()
-  const apiMockRef = useRef<MockAdapter>()
+  const { getSe, getSede } = useAxios()
+  const seMockRef = useRef<MockAdapter>()
+  const sedeMockRef = useRef<MockAdapter>()
 
   if (__DEV__) {
     const { applyApiMock } = require("../test/api")
     return (mock: boolean) => {
       if (mock) {
-        apiMockRef.current = applyApiMock(getSe(), { apiResponseDelay: 420 })
+        const opt = { apiResponseDelay: 420 }
+        seMockRef.current = applyApiMock(getSe(), opt, "se")
+        sedeMockRef.current = applyApiMock(getSede(), opt, "sede")
       } else {
-        apiMockRef.current?.restore()
+        seMockRef.current?.restore()
+        sedeMockRef.current?.restore()
       }
     }
   }
