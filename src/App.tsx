@@ -10,6 +10,8 @@ import {
   AuthProvider,
 } from "app/providers"
 import { Router } from "app/router"
+import "ag-grid-community/dist/styles/ag-grid.css"
+import "ag-grid-community/dist/styles/ag-theme-alpine.css"
 
 export function App() {
   return (

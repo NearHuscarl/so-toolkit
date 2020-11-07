@@ -5,7 +5,7 @@ import {
   createApiResponse,
   mockAccessToken,
 } from "../fixtures"
-import { User, UserParams, UserSortOption } from "app/types"
+import { UserParams, UserSortOption } from "app/types"
 
 function getSortField(sort: UserSortOption) {
   switch (sort) {
