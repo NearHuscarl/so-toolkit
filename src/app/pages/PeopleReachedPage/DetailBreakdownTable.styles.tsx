@@ -25,6 +25,9 @@ const useStyles = makeStyles({
       // fix double horizontal scrollbars on chrome
       overflow: "hidden",
     },
+    "& .p0": {
+      padding: important(0),
+    },
   },
 })
 
